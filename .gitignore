@@ -1,0 +1,4 @@
+# Ignore all csv files
+data/merged*.csv
+data/normed*.csv
+data/labeled*.csv
