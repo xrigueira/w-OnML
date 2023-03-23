@@ -18,7 +18,7 @@ class labeled_901(base.FileDataset):
             filename="labeled_901.csv",
             task=base.BINARY_CLF,
             n_features=15,
-            n_samples=841538
+            n_samples=631106
             )
     
     def __iter__(self):
