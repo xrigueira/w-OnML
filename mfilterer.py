@@ -8,7 +8,7 @@ with too many empty values, and iterates on the rest"""
 def mfilterer(File, timeframe, timestep):
         
     fileName, fileExtension = os.path.splitext(File)
-    df = pd.read_csv(f'Database/{fileName}.csv', delimiter=';')
+    df = pd.read_csv(f'Database/{fileName}.csv', delimiter=',')
 
     years = list(dict.fromkeys(df['year'].tolist()))
 
@@ -76,7 +76,7 @@ def mfilterer(File, timeframe, timestep):
                     # Clean numNaN and consecNaN
                     numNaN, consecNaN = [], []
 
-                    df = pd.read_csv(f'Database/{fileName}.csv', delimiter=';')
+                    df = pd.read_csv(f'Database/{fileName}.csv', delimiter=',')
                     
                     if j == 12:
                         df = df.loc[df['year'] == (i+1)]
@@ -84,7 +84,7 @@ def mfilterer(File, timeframe, timestep):
                         df = df.loc[df['year'] == i]
 
         # Delete those parts of the data frame between the appended indices
-        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=';')
+        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=',')
 
         counter = 0
         # lenMonth = 2976
@@ -98,7 +98,7 @@ def mfilterer(File, timeframe, timestep):
         
         # Save the data frame 
         cols = list(df.columns.values.tolist())
-        df.to_csv(f'Database/{fileName[0:-4]}_pro.csv', sep=';', encoding='utf-8', index=False, header=cols)
+        df.to_csv(f'Database/{fileName[0:-4]}_pro.csv', sep=',', encoding='utf-8', index=False, header=cols)
 
     elif timeframe == 'b':
         
@@ -133,10 +133,10 @@ def mfilterer(File, timeframe, timestep):
                 # Clean numNaN and consecNaN
                 numNaN, consecNaN = [], []
                 
-                df = pd.read_csv(f'Database/{fileName}.csv', delimiter=';')
+                df = pd.read_csv(f'Database/{fileName}.csv', delimiter=',')
             
         # Delete those parts of the data frame between the appended indices
-        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=';')
+        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=',')
         
         counter = 0
         lenWeek = 672
@@ -150,7 +150,7 @@ def mfilterer(File, timeframe, timestep):
 
         # Save the data frame
         cols = list(df.columns.values.tolist())
-        df.to_csv(f'Database/{fileName[0:-4]}_pro.csv', sep=';', encoding='utf-8', index=False, header=cols)
+        df.to_csv(f'Database/{fileName[0:-4]}_pro.csv', sep=',', encoding='utf-8', index=False, header=cols)
         
     elif timeframe == 'c':
 
@@ -195,7 +195,7 @@ def mfilterer(File, timeframe, timestep):
                         # Clean numNaN and consecNaN
                         numNaN, consecNaN = [], []
 
-                        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=';')
+                        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=',')
 
                         if j == 12 and k == 31:
                             df = df.loc[df['year'] == (i+1)]
@@ -211,7 +211,7 @@ def mfilterer(File, timeframe, timestep):
                                 df = df.loc[df['month'] == (j+1)]
 
         # Delete those parts of the data frame between the appended indices
-        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=';')
+        df = pd.read_csv(f'Database/{fileName}.csv', delimiter=',')
 
         counter = 0
         lenDay = 96
@@ -225,4 +225,4 @@ def mfilterer(File, timeframe, timestep):
 
         # Save the data frame
         cols = list(df.columns.values.tolist())
-        df.to_csv(f'Database/{fileName[0:-4]}_pro.csv', sep=';', encoding='utf-8', index=False, header=cols)
+        df.to_csv(f'Database/{fileName[0:-4]}_pro.csv', sep=',', encoding='utf-8', index=False, header=cols)

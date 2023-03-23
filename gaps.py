@@ -24,7 +24,7 @@ def gapper():
     for f in files:
 
         station = f[7:10]
-        df = pd.read_csv(f'data/{f}', sep=';', parse_dates=['date'], encoding='utf-8')
+        df = pd.read_csv(f'data/{f}', sep=',', parse_dates=['date'], encoding='utf-8')
 
         # Get the columns
         variables = df.columns[9:]
@@ -39,13 +39,13 @@ def gapper():
             percent_missing_croped = df[v].isnull().sum() * 100 / len(df)
 
             # Read again
-            df = pd.read_csv(f'data/{f}', sep=';', parse_dates=['date'], encoding='utf-8')
+            df = pd.read_csv(f'data/{f}', sep=',', parse_dates=['date'], encoding='utf-8')
 
             # Add the results of each iteration to the dataframe
             gaps.loc[len(gaps.index)] = [station, v, percent_missing, percent_missing_croped]
 
     # Save the results
-    gaps.to_csv(f'data/gaps.csv', sep=';', encoding='utf-8', index=False)
+    gaps.to_csv(f'data/gaps.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
 def columner():
@@ -59,7 +59,7 @@ def columner():
         
         station = f[7:10]
         
-        df = pd.read_csv(f'data/{f}', sep=';', parse_dates=['date'], encoding='utf-8')
+        df = pd.read_csv(f'data/{f}', sep=',', parse_dates=['date'], encoding='utf-8')
 
         # Get the number of missing values per row in the database
         missing = df.isnull().sum(axis=1).tolist()
@@ -72,7 +72,7 @@ def columner():
         cols.loc[len(cols.index)] = [station, one_var, two_var, three_var, four_var, five_var, six_var, seven_var, eight_var]
 
     # Save the results
-    cols.to_csv(f'data/cols.csv', sep=';', encoding='utf-8', index=False)
+    cols.to_csv(f'data/cols.csv', sep=',', encoding='utf-8', index=False)
 
 
 if __name__ == '__main__':

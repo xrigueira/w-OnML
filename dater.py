@@ -26,7 +26,7 @@ def dater(File, timestep):
     if timestep == '15 min':
     
         fileName, fileExtension = os.path.splitext(File)
-        df = pd.read_csv(f'data/{fileName}.csv', delimiter=';', parse_dates=['date'], index_col=['date'])
+        df = pd.read_csv(f'data/{fileName}.csv', delimiter=',', parse_dates=['date'], index_col=['date'])
 
         # Add the needed columns (year, month, day, hour, min, sec)
         year = [i for i in df.index.year]
@@ -86,12 +86,12 @@ def dater(File, timestep):
         # Save the new new file
         df.index.name = 'date'
         cols = list(df.columns.values.tolist())
-        df.to_csv(f'data/{fileName[0:-5]}_col.csv', sep=';', encoding='utf-8', index=True, header=cols)
+        df.to_csv(f'data/{fileName[0:-5]}_col.csv', sep=',', encoding='utf-8', index=True, header=cols)
 
     elif timestep == '1 day':
         
         fileName, fileExtension = os.path.splitext(File)
-        df = pd.read_csv(f'data/{fileName}.csv', delimiter=';', parse_dates=['date'], index_col=['date'])
+        df = pd.read_csv(f'data/{fileName}.csv', delimiter=',', parse_dates=['date'], index_col=['date'])
         
         # Add the needed columns (year, month, day)
         year = [i for i in df.index.year]
@@ -145,4 +145,4 @@ def dater(File, timestep):
         # Save the new new file
         df.index.name = 'date'
         cols = list(df.columns.values.tolist())
-        df.to_csv(f'data/{fileName[0:-5]}_col.csv', sep=';', encoding='utf-8', index=False, header=cols)
+        df.to_csv(f'data/{fileName[0:-5]}_col.csv', sep=',', encoding='utf-8', index=False, header=cols)

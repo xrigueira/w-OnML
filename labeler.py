@@ -5,7 +5,7 @@ from datetime import datetime
 """This file is used to label the normalized files"""
 
 # Read the anomalies file
-df_anomalies = pd.read_csv(f'data/anomalies.csv', sep=';', encoding='utf-8')
+df_anomalies = pd.read_csv(f'data/anomalies.csv', sep=',', encoding='utf-8')
 
 # Group rows by station number and apply a lambda function to create tuples of start and end dates
 grouped = df_anomalies.groupby('Station').apply(lambda x: [(s, e) for s, e in zip(x.Start_date, x.End_date)])
@@ -15,7 +15,7 @@ anomalies = grouped.to_dict()
 
 for station in anomalies.keys():
     # Read the normed database
-    df = pd.read_csv(f'data/normed_{station}.csv', sep=';', encoding='utf-8', parse_dates=['date'])
+    df = pd.read_csv(f'data/normed_{station}.csv', sep=',', encoding='utf-8', parse_dates=['date'])
 
     # Add the label column with all zeros for now
     df['label'] = [0] * len(df)
@@ -28,6 +28,6 @@ for station in anomalies.keys():
         df.loc[(df.date >= startDate) & (df.date <= endDate), 'label'] = 1
 
     # Save the database
-    df.to_csv(f'data/labeled_{station}.csv', sep=';', encoding='utf-8', index=False)
+    df.to_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8', index=False)
 
 

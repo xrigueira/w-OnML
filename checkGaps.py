@@ -36,5 +36,5 @@ def checkGaps(File, timestep):
     df.index.name = 'date'
     
     # Save the db to csv
-    df.to_csv(f'data/{fileName}_full.csv', sep=';', encoding='utf-8', index=True, header=[f'{fileName}'])
+    df.to_csv(f'data/{fileName}_full.csv', sep=',', encoding='utf-8', index=True, header=[f'{fileName}'])
 
