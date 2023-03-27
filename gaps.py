@@ -8,16 +8,9 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
+from tictoc import tictoc
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
-
-def tictoc(func):
-    def wrapper(**kargs):
-        t1 = time.time()
-        func(**kargs)
-        t2 = time.time() - t1
-        print(f'{func.__name__} ran in {round(t2, ndigits=2)} seconds')
-    return wrapper
 
 @tictoc
 def gapper():
@@ -148,8 +141,16 @@ def analyzer():
 
     # Also get the number of anomalies that have missing values and the percentage with respect to the total number of anomalies: To program this: count number of rows that have gaps and have a label == 1
 
+@tictoc
 def anomalier():
+    """This function studies the number of rows labeled as anomalies and those which have missing values but
+    are also labeled as anomalous.
+    ----------
+    Arguments:
+    None
     
+    Return:
+    None"""
     # Define file names
     files = ['901', '902', '904', '905', '906', '907', '910', '916']
     
@@ -196,7 +197,6 @@ def anomalier():
 
     # Show the plot
     plt.show()
-        
 
 if __name__ == '__main__':
 

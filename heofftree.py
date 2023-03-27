@@ -13,4 +13,4 @@ model = compose.Pipeline(
 
 for x, y in dataset:
     model.learn_one(x, y)
-    print(model.debug_one(x))
+    # print(model.debug_one(x))

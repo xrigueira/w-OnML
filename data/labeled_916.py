@@ -2,8 +2,8 @@ from river import stream
 
 from . import base
 
-class labeled_902(base.FileDataset):
-    """Water quality date from the 902 station.
+class labeled_916(base.FileDataset):
+    """Water quality date from the 916 station.
     
     The file contains water quality data from the Ebro river in Spain recorded every 15 minutes
     from Jan 1st, 1999 to Dec 31st, 2022. The goal is to implement online learning for anomaly 
@@ -12,13 +12,13 @@ class labeled_902(base.FileDataset):
     References
     ----------
     [1] [SAICA EBRO](https://saica.chebro.es/)"""
-    
+
     def __init__(self):
         super().__init__(
-            filename="labeled_902_cle.csv",
+            filename="labeled_916_cle.csv",
             task=base.BINARY_CLF,
-            n_features=16,
-            n_samples=841538
+            n_features=15,
+            n_samples=631106
             )
     
     def __iter__(self):
@@ -33,13 +33,13 @@ class labeled_902(base.FileDataset):
                         "second": int,
                         "week": int,
                         "weekOrder": int,
-                        "ammonium_902": float,
-                        "conductivity_902": float,
-                        "dissolved_oxygen_902": float,
-                        "nitrates_902": float,
-                        "pH_902": float,
-                        "turbidity_902": float,
-                        "water_temperature_902": float,
+                        "ammonium_916": float,
+                        "conductivity_916": float,
+                        "dissolved_oxygen_916": float,
+                        "pH_916": float,
+                        "turbidity_916": float,
+                        "water_level_916": float,
+                        "water_temperature_916": float,
                         "label": int,
                 
             },

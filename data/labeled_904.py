@@ -15,10 +15,10 @@ class labeled_904(base.FileDataset):
     
     def __init__(self):
         super().__init__(
-            filename="labeled_904.csv",
+            filename="labeled_904_cle.csv",
             task=base.BINARY_CLF,
             n_features=16,
-            n_samples=841538
+            n_samples=631106
             )
     
     def __iter__(self):
@@ -36,7 +36,7 @@ class labeled_904(base.FileDataset):
                         "ammonium_904": float,
                         "conductivity_904": float,
                         "dissolved_oxygen_904": float,
-                        "ph_904": float,
+                        "pH_904": float,
                         "turbidity_904": float,
                         "water_temperature_904": float,
                         "label": int,

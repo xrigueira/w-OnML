@@ -15,7 +15,7 @@ class labeled_901(base.FileDataset):
     
     def __init__(self):
         super().__init__(
-            filename="labeled_901.csv",
+            filename="labeled_901_cle.csv",
             task=base.BINARY_CLF,
             n_features=15,
             n_samples=631106
