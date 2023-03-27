@@ -403,9 +403,6 @@ Station;Start_date;End_date;Variable
 904;21-11-2022 07:15:00;25-11-2022 21:30:00;turbidity
 904;08-12-2022 20:45:00;10-12-2022 14:45:00;ammonium, conductivity, turbidity, water level
 904;12-12-2022 14:15:00;16-12-2022 16:30:00;turbidity
-913;26-05-2008 12:00:00;30-05-2005 00:00:00;water_level, turbidity, conductivity, pH, dissolved_oxygen
-913;11-12-2009 00:00:00;15-12-2009 00:00:00;water_level, water_temperature, conductivity, dissolved_oxygen, pH
-913;14-10-2011 11:00:00;17-10-2011 12:00:00;turbidity, water_level, conductivity, pH, dissolved_oxygen, water_temperature
 916;19-04-2007 01:15:00;24-04-2007 18:00:00;ammonium
 916;15-10-2007 00:00:00;08-02-2008 00:00:00;turbidity
 916;10-12-2008 18:00:00;11-12-2008 03:00:00;ammonium, conductivity, water_level, turbidity

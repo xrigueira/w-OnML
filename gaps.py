@@ -3,8 +3,10 @@ of each merged file"""
 
 import os
 import time
+import random
 import numpy as np
 import pandas as pd
+import plotly.express as px
 
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
@@ -96,27 +98,9 @@ def columner():
     # Save the results
     cols.to_csv(f'data/cols.csv', sep=',', encoding='utf-8', index=False)
 
-
-def numberBins(data):
-    n = len(data) # number of observations
-    range = max(data) - min(data) 
-    numIntervals = np.sqrt(n) 
-    width = range/numIntervals # width of the intervals
-    
-    return np.arange(min(data), max(data), width).tolist()
-
-def histogram(data, station):
-    plt.hist(data, bins=50)
-    plt.title(f'Histogram {station}')
-    plt.xlabel('Values')
-    plt.ylabel('Frequency')
-    
-    plt.show()
-
-
 @tictoc
-def analyzer(station):
-    """This function analyzed the number of gaps, their lenght and the number of variables affected in each case.
+def analyzer():
+    """This function analyzes the number of gaps, their lenght and the number of variables affected in each case.
     ----------
     Arguments:
     station -- the number of the station to analyze
@@ -124,33 +108,96 @@ def analyzer(station):
     Return:
     None"""
     
-    # Read the database
-    df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
+    gaps = pd.DataFrame()
 
-    # Get the number of missing values per row in the database
-    missing = df.isnull().sum(axis=1).tolist()
+    # Define file names
+    files = ['901', '902', '904', '905', '906', '907', '910', '916']
     
-    histogram(data=missing, station=station)
-
-    # Get the length of each gap
-    gap_lenghts = []
-    gap_counter = 0
-    for i in missing:
-        if i != 0:
-            gap_counter += 1
+    for f in files:
         
-        elif i == 0 and gap_counter !=0:
-            gap_lenghts.append(gap_counter)
-            gap_counter = 0
+        # Read the database
+        df = pd.read_csv(f'data/labeled_{f}.csv', sep=',', encoding='utf-8')
 
-    # Summarize this results in a table. Let's say: what is the percentage of gaps that are just one row. To do this, program: number of 1s in gap_lengths/len(gap_lenghts)
-    # I think the max gap that i can fill up would be 10 hours or less
-    plt.plot(gap_lenghts)
+        # Get the number of missing values per row in the database
+        missing = df.isnull().sum(axis=1).tolist()
+        
+        gaps[f] = missing
+        
+        # Get the length of each gap
+        gap_lenghts = []
+        gap_counter = 0
+        for i in missing:
+            if i != 0:
+                gap_counter += 1
+            
+            elif i == 0 and gap_counter !=0:
+                gap_lenghts.append(gap_counter)
+                gap_counter = 0
+        
+        plt.plot(gap_lenghts, color=tuple(random.random() for _ in range(3)))
+        plt.title(f'Gap length {f}')
+        plt.ylabel('Length of each gap')
+        plt.show()
+    
+    # Plots
+    plt.hist(gaps.values, alpha=0.80, label=gaps.columns)
+    plt.title('Missing values boxplot')
+    plt.ylabel('Missing values per row')
+    plt.legend()
     plt.show()
 
     # Also get the number of anomalies that have missing values and the percentage with respect to the total number of anomalies: To program this: count number of rows that have gaps and have a label == 1
 
+def anomalier():
+    
+    # Define file names
+    files = ['901', '902', '904', '905', '906', '907', '910', '916']
+    
+    # Initialize lists to store the counts
+    anomalies_counts = []
+    missing_anomalies_counts = []
+    for f in files:
+        
+        # Read the database
+        df = pd.read_csv(f'data/labeled_{f}.csv', sep=',', encoding='utf-8')
+        
+        # Count the number of anomalies and missing anomalies
+        anomalies = (df['label'] == 1).sum()
+        missing_anomalies = ((df['label'] == 1) & (df.isna().any(axis=1))).sum()
+        
+        # Append the counts to the lists
+        anomalies_counts.append(anomalies)
+        missing_anomalies_counts.append(missing_anomalies)
+    
+    # Create a figure and axis object
+    fig, ax = plt.subplots()
+
+    # Define the x positions of the bars
+    x_positions = range(len(files))
+
+    # Define the width of the bars
+    bar_width = 0.4
+    
+    # Create the bars
+    anomalies_bars = ax.bar(x_positions, anomalies_counts, bar_width, label='Anomalies')
+    missing_anomalies_bars = ax.bar([x + bar_width for x in x_positions], missing_anomalies_counts, bar_width, label='Missing Anomalies')
+
+    # Set the x-axis ticks and labels
+    ax.set_xticks(x_positions)
+    ax.set_xticklabels(files)
+
+    # Add a legend
+    ax.legend()
+
+    # Add axis labels and a title
+    ax.set_xlabel('File')
+    ax.set_ylabel('Count')
+    ax.set_title('Anomalies and Missing Anomalies by File')
+
+    # Show the plot
+    plt.show()
+        
 
 if __name__ == '__main__':
 
-    analyzer(station=904)
+    anomalier()
