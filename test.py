@@ -22,8 +22,8 @@ model = compose.Pipeline(
     compose.Select("year", "month", "day", "hour", "minute", "second", "week", "weekOrder", "ammonium_901", "conductivity_901", "dissolved_oxygen_901", "ph_901", "turbidity_901", "water_temperature_901"),
     imblearn.RandomSampler(
         classifier=linear_model.LogisticRegression(),
-        desired_dist={0: .8, 1: .2},
-        sampling_rate=.01,
+        desired_dist={0: .8, 1: .2},    # Samples data to contain 80% of 0s and 20% of 1s
+        sampling_rate=.01,              # Trains with 1% of the data
         seed=42
     )
 )
