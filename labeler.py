@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-"""This file is used to label the normalized files"""
+"""This file is used to label the merged or normalized files"""
 
 # Read the anomalies file
 df_anomalies = pd.read_csv(f'data/anomalies.csv', sep=';', encoding='utf-8')
@@ -14,7 +14,7 @@ grouped = df_anomalies.groupby('Station').apply(lambda x: [(s, e) for s, e in zi
 anomalies = grouped.to_dict()
 
 for station in anomalies.keys():
-    # Read the database
+    # Read the database, which can be either the merged or normalized
     df = pd.read_csv(f'data/merged_{station}.csv', sep=',', encoding='utf-8', parse_dates=['date'])
 
     # Add the label column with all zeros for now

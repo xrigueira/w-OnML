@@ -2,7 +2,6 @@
 of each merged file"""
 
 import os
-import time
 import random
 import numpy as np
 import pandas as pd
@@ -14,7 +13,6 @@ plt.style.use('ggplot')
 
 @tictoc
 def gapper():
-
     """This function gets the percentage of gaps in every variable of each dataset
     and saves it to a csv file.
     ----------
@@ -197,6 +195,34 @@ def anomalier():
 
     # Show the plot
     plt.show()
+
+@tictoc
+def deleter(station, variable):
+    """This function deletes the undesired variables in the merged and normalized 
+    databases of the defined station.
+    ----------
+    Arguments:
+    station -- the station number as an integer.
+    variable -- the name of the variable to delete as a string.
+
+    Return:
+    None"""
+
+    station = 916
+    variables = ['absorbance']
+
+    # Read the dfs
+    merged = pd.read_csv(f'data/merged_{station}.csv', sep=',', encoding='utf-8')
+    normed = pd.read_csv(f'data/normed_{station}.csv', sep=',', encoding='utf-8')
+
+    for var in variables:
+
+        merged.drop(f'{var}_{station}', inplace=True, axis=1)
+        normed.drop(f'{var}_{station}', inplace=True, axis=1)
+
+    # Save the files
+    merged.to_csv(f'data/merged_{station}.csv', sep=',', encoding='utf-8', index=False)
+    normed.to_csv(f'data/normed_{station}.csv', sep=',', encoding='utf-8', index=False)
 
 if __name__ == '__main__':
 
