@@ -41,7 +41,7 @@ def imputation_iter(station):
     # Save the new dataframe
     df.to_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8', index=False)
 
-def imputation_knn2(station):
+def imputation_knn(station):
     """Performs data "imputation" with the kNN method.
     ----------
     Arguments:
@@ -95,15 +95,57 @@ def imputation_knn2(station):
     df_imputed.to_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8', index=False)
 
 def imputation_svm(station):
-    """_summary_
-
-    Args:
-        station (_type_): _description_
-    """
+    """Performs data "imputation" with the kNN method
+    ----------
+    Arguments:
+    station -- the number of the station to analyze
+    
+    Return:
+    None"""
+    
     # Read the database
     df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
     
-    # TODO: see GPT answer
+    # Split the dataframe into two parts: one with missing values, and another without them
+    df_missing = df[df.isnull().any(axis=1)]
+    df_not_missing = df[~df.isnull().any(axis=1)]
+    
+    # Split the dataframe without missing values into features (X) and targets (y) variables.
+    # In this case, the target variables in the columns with missing values
+    variables = list(df.columns[9:-1])
+    X = df_not_missing.drop(variables, axis=1)
+    y = df_not_missing[variables]
+
+    # Split the data into training and testing samples
+    from sklearn.model_selection import train_test_split
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    
+    # Scale the data
+    from sklearn.preprocessing import StandardScaler
+    
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    
+    # Train a Support Vector Regression model on the training set
+    from sklearn.svm import SVR
+    
+    model = SVR(kernel='rbf', C=10, gamma=0.1)
+    model.fit(X_train_scaled, y_train)
+
+    # Use the trained model to predict the missing values in the test set
+    predicted = model.predict(X_test_scaled)
+
+    # Replace the missing values in the original dataframe with the predicted values
+    df_missing[['ammonium', 'pH', 'turbidity', 'conductivity']] = predicted
+    
+    # Merge the dataframe with imputed values with the dataframe without missing values
+    df_imputed = pd.concat([df_missing, df_not_missing])
+    
+    # Save the new dataframe
+    df_imputed.to_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8', index=False)
+    
 
 def imputation_logreg(station):
     """_summary_
@@ -152,4 +194,4 @@ def imputation_trees(station):
 
 if __name__ == '__main__':
 
-    imputation_knn2(station=901)
+    imputation_svm(station=901)
