@@ -141,12 +141,17 @@ def imputation_svm(station):
 
     # Merge the dataframe with imputed values with the dataframe without missing values
     df_imputed = pd.concat([df_missing, df_not_missing])
+
+    # Insert the original 'date' and 'label' columns
+    date_col = df.pop('date')
+    label_col = df.pop('label')
+    df_imputed.insert(0, 'date', date_col)
+    df_imputed.insert(len(df_imputed.columns), 'label', label_col)
     
     # Save the new dataframe
     df_imputed.to_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8', index=False)
 
-
-def imputation_logreg(station):
+def imputation_linreg(station):
     """_summary_
 
     Args:
@@ -155,8 +160,35 @@ def imputation_logreg(station):
     # Read the database
     df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
     
-    # TODO: look up and ask GPT
+    # Split the dataframe into two parts: one with missing values, and another without them
+    df_missing = df[df.isnull().any(axis=1)]
+    df_not_missing = df[~df.isnull().any(axis=1)]
     
+    # Drop the 'date' column as it is not an integer float and the label
+    df_missing = df_missing.drop(['date', 'label'], axis=1)
+    df_not_missing = df_not_missing.drop(['date', 'label'], axis=1)
+    
+    # Train a linear regression model on the dataframe without missing values
+    from sklearn.linear_model import LinearRegression
+    
+    model = LinearRegression()
+    
+    variables = list(df.columns[9:-1])
+    X_train = df_not_missing.drop(variables, axis=1)
+    y_train = df_not_missing[variables]
+    
+    model.fit(X_train, y_train)
+    
+    # Use the trained model to predict the values in the dataframe with missing values
+    X_test = df_missing.drop(variables, axis=1)
+    y_hat = model.predict(X_test)
+    
+    # Replace the missing values in the original dataframe with the predicted ones
+    df.loc[df.isnull().any(axis=1), variables] = y_hat
+    
+    # Save the new dataframe
+    df.to_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8', index=False)
+
 def imputation_trees(station):
     """Performs data "imputation" with the missForest algorithm.
     ----------
