@@ -110,42 +110,41 @@ def imputation_svm(station):
     df_missing = df[df.isnull().any(axis=1)]
     df_not_missing = df[~df.isnull().any(axis=1)]
     
+    # Drop the 'date' column as it is not an integer float and the label
+    df_missing = df_missing.drop(['date', 'label'], axis=1)
+    df_not_missing = df_not_missing.drop(['date', 'label'], axis=1)
+    
     # Split the dataframe without missing values into features (X) and targets (y) variables.
     # In this case, the target variables in the columns with missing values
     variables = list(df.columns[9:-1])
     X = df_not_missing.drop(variables, axis=1)
     y = df_not_missing[variables]
-
+    
     # Split the data into training and testing samples
     from sklearn.model_selection import train_test_split
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     
-    # Scale the data
-    from sklearn.preprocessing import StandardScaler
-    
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+    X_test = X_test[:len(df_missing)]
     
     # Train a Support Vector Regression model on the training set
     from sklearn.svm import SVR
+    from sklearn.multioutput import MultiOutputRegressor
     
-    model = SVR(kernel='rbf', C=10, gamma=0.1)
-    model.fit(X_train_scaled, y_train)
-
-    # Use the trained model to predict the missing values in the test set
-    predicted = model.predict(X_test_scaled)
-
+    model = MultiOutputRegressor(SVR(kernel='rbf', C=10, gamma=0.1))
+    model.fit(X_train, y_train)
+    
+    # Use the trained model to predict the missing values
+    predicted = model.predict(X_test)
+    
     # Replace the missing values in the original dataframe with the predicted values
-    df_missing[['ammonium', 'pH', 'turbidity', 'conductivity']] = predicted
-    
+    df_missing.loc[df_missing[variables].index, variables] = pd.DataFrame(predicted, index=df_missing[variables].index, columns=variables)
+
     # Merge the dataframe with imputed values with the dataframe without missing values
     df_imputed = pd.concat([df_missing, df_not_missing])
     
     # Save the new dataframe
     df_imputed.to_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8', index=False)
-    
+
 
 def imputation_logreg(station):
     """_summary_
