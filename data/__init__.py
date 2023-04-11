@@ -6,14 +6,14 @@ the data in a stream fashion. All datasets have fixed size. Please refer to `riv
 are interested in infinite synthetic data generators.
 
 """
-from .labeled_901 import labeled_901
-from .labeled_902 import labeled_902
-from .labeled_904 import labeled_904
-from .labeled_905 import labeled_905
-from .labeled_906 import labeled_906
-from .labeled_907 import labeled_907
-from .labeled_910 import labeled_910
-from .labeled_916 import labeled_916
+from .labeled import labeled_901
+from .labeled import labeled_902
+from .labeled import labeled_904
+from .labeled import labeled_905
+from .labeled import labeled_906
+from .labeled import labeled_907
+from .labeled import labeled_910
+from .labeled import labeled_916
 
 __all__ = [
     "labeled_901",

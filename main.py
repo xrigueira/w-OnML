@@ -1,14 +1,100 @@
 import data
-
+import pandas as pd
 from tictoc import tictoc
 
-from imputation import imputation_del
+class Imputator():
+    
+    def __init__(self, station) -> None:
+        self.dataset = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
+        self.station = station
+    
+    @tictoc
+    def imputation_del(self):
+        """Performs data "imputation" by deleting all those rows with missing values.
+        ----------
+        Arguments:
+        station -- the number of the station to analyze
+        
+        Return:
+        None"""
+        
+        # Remove all rows with misssing
+        self.dataset = self.dataset.dropna()
+        
+        # Save the new dataframe
+        self.dataset = self.dataset.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
+    
+    def imputation_iter(self):
+        """Performs data imputation by iterating on all those rows with missing values.
+        ----------
+        Arguments:
+        station -- the number of the station to analyze
+        
+        Return:
+        None"""
+        
+        # Iterate
+        self.dataset = (self.dataset.interpolate(method='polynomial', order=1)).round(2)
+        
+        # Save the new dataframe
+        self.dataset.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
+    
+    def imputation_knn(self):
+        """Performs data "imputation" with the kNN method.
+        ----------
+        Arguments:
+        station -- the number of the station to analyze
+        
+        Return:
+        None"""
+
+        # Split the dataframe into two parts: one with missing values, and another without them
+        df_missing = self.dataset[self.dataset.isnull().any(axis=1)]
+        df_not_missing = self.dataset[~self.dataset.isnull().any(axis=1)]
+
+        # Drop the nonvariable columns
+        drop_columns = ['date', 'year', 'month', 'day', 'hour', 'minute', 'second', 'week', 'weekOrder', 'label']
+
+        df_missing = df_missing.drop(drop_columns, axis=1)
+        df_not_missing = df_not_missing.drop(drop_columns, axis=1)
+
+        # Normalize the data
+        from sklearn.preprocessing import StandardScaler
+
+        scaler = StandardScaler()
+        df_not_missing_normalized = pd.DataFrame(scaler.fit_transform(df_not_missing), columns=df_not_missing.columns)
+        df_missing_normalized = pd.DataFrame(scaler.transform(df_missing), columns=df_missing.columns, index=df_missing.index)
+
+        # Use kNN imputation to fill in the missing values
+        from sklearn.impute import KNNImputer
+
+        imputer = KNNImputer(n_neighbors=5)
+        df_missing_imputed = pd.DataFrame(imputer.fit_transform(df_missing_normalized), columns=df_missing_normalized.columns, index=df_missing.index)
+
+        # Inverse normalize the data (maybe this step is not needed)
+        df_missing_imputed = pd.DataFrame(scaler.inverse_transform(df_missing_imputed), columns=df_missing.columns, index=df_missing.index)
+
+        # Add the missing rows back to the original dataframe
+        df_imputed = pd.concat([df_not_missing, df_missing_imputed], axis=0)
+
+        # Add the dropped columns
+        df_dropped = self.dataset[drop_columns]
+        
+        df_imputed = pd.concat([df_dropped, df_imputed], axis=1)
+        
+        # Move 'label' column to the last possition
+        col_to_move = df_imputed.pop('label')
+        df_imputed.insert(len(df_imputed.columns), 'label', col_to_move)
+
+        # Save the new dataframe
+        df_imputed.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
+
 
 class Model():
 
     def __init__(self) -> None:
         self.dataset = data.labeled_901()
-    
+
     @tictoc
     def logreg(self):
         """This method performs logist regression.
@@ -30,6 +116,7 @@ class Model():
             linear_model.LogisticRegression()
         )
 
+        # Documentation on ROC AUC: https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc
         metric = metrics.ROCAUC()
 
         for x, y in self.dataset:
@@ -172,9 +259,12 @@ class Model():
 
 if __name__ == '__main__':
 
-    # Call the imputation method
-    # imputation_del(station=901)
-
-    # Call the model
-    model = Model()
-    model.hoefftree()
+    station = 901
+    
+    # Impute the data
+    imputator = Imputator(station=901)
+    imputator.imputation_del()
+    
+    # # Call the model
+    # model = Model()
+    # model.hoefftree()

@@ -40,5 +40,5 @@ if __name__ == '__main__':
         # print('[INFO] filterer() DONE')
 
         # Normalize the results
-        normalizer(station=station)
-        print(f'[INFO] normalizer() DONE | station: {station}')
+        # normalizer(station=station)
+        # print(f'[INFO] normalizer() DONE | station: {station}')
