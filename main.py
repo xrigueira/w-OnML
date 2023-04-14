@@ -297,7 +297,7 @@ class Model():
         from river import evaluate
 
         model = compose.Pipeline(
-            compose.Select("year", "month", "day", "hour", "minute", "second", "week", "weekOrder", "ammonium_901", "conductivity_901", "dissolved_oxygen_901", "ph_901", "turbidity_901", "water_temperature_901"),
+            compose.Select(*self.columns),
             tree.HoeffdingTreeClassifier(grace_period=200)
         )
 
@@ -326,7 +326,7 @@ class Model():
         from river import preprocessing
 
         model = compose.Pipeline(
-            compose.Select("year", "month", "day", "hour", "minute", "second", "week", "weekOrder", "ammonium_901", "conductivity_901", "dissolved_oxygen_901", "ph_901", "turbidity_901", "water_temperature_901"),
+            compose.Select(*self.columns),
             preprocessing.MinMaxScaler(),
             anomaly.HalfSpaceTrees(seed=24)
         )
@@ -341,7 +341,7 @@ class Model():
         print(metric)
 
     @tictoc
-    def logref_imb(self):
+    def logreg_imb(self):
         """This method implements logistic regression with imbalanced data.
         This means that the data has a lot more 0s than 1s, therefore we try
         to balance this out.
@@ -365,7 +365,7 @@ class Model():
             print(f'{c}: {count} ({count / sum(counts.values()):.5%})')
         
         model = compose.Pipeline(
-            compose.Select("year", "month", "day", "hour", "minute", "second", "week", "weekOrder", "ammonium_901", "conductivity_901", "dissolved_oxygen_901", "ph_901", "turbidity_901", "water_temperature_901"),
+            compose.Select(*self.columns),
             imblearn.RandomSampler(
                 classifier=linear_model.LogisticRegression(),
                 desired_dist={0: .8, 1: .2},                    # Samples data to contain 80% of 0s and 20% of 1s
@@ -418,8 +418,8 @@ if __name__ == '__main__':
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    imputator.imputation_del()
+    # imputator.imputation_knn()
     
     # Call the model
     model = Model(station=station, columns=columns)
-    model.logreg()
+    model.halfspace()
