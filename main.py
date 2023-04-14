@@ -18,9 +18,7 @@ class Imputator():
         Return:
         Column names but the first and last one"""
         
-        columns = self.dataset.columns[1:-1]
-        
-        return {col: 0 for col in columns}
+        return list(self.dataset.columns[1:-1])
     
     @tictoc
     def imputation_del(self):
@@ -265,10 +263,9 @@ class Model():
         from river import preprocessing
         
         # Convert dictionary keys to a list of column names
-        column_names = list(self.columns.keys())
         
         model = compose.Pipeline(
-            compose.Select(*column_names),
+            compose.Select(*self.columns),
             # Add the standard scaler and see if it works: preprocessing.StandardScaler(),
             linear_model.LogisticRegression()
         )
