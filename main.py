@@ -8,6 +8,20 @@ class Imputator():
         self.dataset = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
         self.station = station
     
+    def selector(self):
+        """This function returns the column names of
+        the database as they will be required by the Model()
+        ---------
+        Arguments:
+        self
+        
+        Return:
+        Column names but the first and last one"""
+        
+        columns = self.dataset.columns[1:-1]
+        
+        return {col: 0 for col in columns}
+    
     @tictoc
     def imputation_del(self):
         """Performs data "imputation" by deleting all those rows with missing values.
@@ -24,6 +38,7 @@ class Imputator():
         # Save the new dataframe
         self.dataset = self.dataset.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
     
+    @tictoc
     def imputation_iter(self):
         """Performs data imputation by iterating on all those rows with missing values.
         ----------
@@ -39,8 +54,9 @@ class Imputator():
         # Save the new dataframe
         self.dataset.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
     
+    @tictoc
     def imputation_knn(self):
-        """Performs data "imputation" with the kNN method.
+        """Performs data imputation with the kNN method.
         ----------
         Arguments:
         station -- the number of the station to analyze
@@ -89,11 +105,149 @@ class Imputator():
         # Save the new dataframe
         df_imputed.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
 
+    @tictoc
+    def imputation_svm(self):
+        """Performs data imputation with the kNN method
+        ----------
+        Arguments:
+        station -- the number of the station to analyze
+        
+        Return:
+        None"""
+        
+        # Split the dataframe into two parts: one with missing values, and another without them
+        df_missing = self.dataset[self.dataset.isnull().any(axis=1)]
+        df_not_missing = self.dataset[~self.dataset.isnull().any(axis=1)]
+        
+        # Drop the 'date' column as it is not an integer float and the label
+        df_missing = df_missing.drop(['date', 'label'], axis=1)
+        df_not_missing = df_not_missing.drop(['date', 'label'], axis=1)
+        
+        # Split the dataframe without missing values into features (X) and targets (y) variables.
+        # In this case, the target variables in the columns with missing values
+        variables = list(self.dataset.columns[9:-1])
+        X = df_not_missing.drop(variables, axis=1)
+        y = df_not_missing[variables]
+        
+        # Split the data into training and testing samples
+        from sklearn.model_selection import train_test_split
+        
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+        X_test = X_test[:len(df_missing)]
+        
+        # Train a Support Vector Regression model on the training set
+        from sklearn.svm import SVR
+        from sklearn.multioutput import MultiOutputRegressor
+        
+        model = MultiOutputRegressor(SVR(kernel='rbf', C=10, gamma=0.1))
+        model.fit(X_train, y_train)
+        
+        # Use the trained model to predict the missing values
+        predicted = model.predict(X_test)
+        
+        # Replace the missing values in the original dataframe with the predicted values
+        df_missing.loc[df_missing[variables].index, variables] = pd.DataFrame(predicted, index=df_missing[variables].index, columns=variables)
 
+        # Merge the dataframe with imputed values with the dataframe without missing values
+        df_imputed = pd.concat([df_missing, df_not_missing])
+
+        # Insert the original 'date' and 'label' columns
+        date_col = self.dataset.pop('date')
+        label_col = self.dataset.pop('label')
+        df_imputed.insert(0, 'date', date_col)
+        df_imputed.insert(len(df_imputed.columns), 'label', label_col)
+        
+        # Save the new dataframe
+        df_imputed.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
+
+    @tictoc
+    def imputation_linreg(self):
+        """Performs imputation using linear regression
+        ----------
+        Arguments:
+        station -- the number of the station to analyze
+        
+        Return:
+        None"""
+        
+        # Split the dataframe into two parts: one with missing values, and another without them
+        df_missing = self.dataset[self.dataset.isnull().any(axis=1)]
+        df_not_missing = self.dataset[~self.dataset.isnull().any(axis=1)]
+        
+        # Drop the 'date' column as it is not an integer float and the label
+        df_missing = df_missing.drop(['date', 'label'], axis=1)
+        df_not_missing = df_not_missing.drop(['date', 'label'], axis=1)
+        
+        # Train a linear regression model on the dataframe without missing values
+        from sklearn.linear_model import LinearRegression
+        
+        model = LinearRegression()
+        
+        variables = list(self.dataset.columns[9:-1])
+        X_train = df_not_missing.drop(variables, axis=1)
+        y_train = df_not_missing[variables]
+        
+        model.fit(X_train, y_train)
+        
+        # Use the trained model to predict the values in the dataframe with missing values
+        X_test = df_missing.drop(variables, axis=1)
+        y_hat = model.predict(X_test)
+        
+        # Replace the missing values in the original dataframe with the predicted ones
+        self.dataset.loc[self.dataset.isnull().any(axis=1), variables] = y_hat
+        
+        # Save the new dataframe
+        self.dataset.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
+    
+    @tictoc
+    def imputation_trees(self):
+        """Performs data imputation with the missForest algorithm.
+        ----------
+        Arguments:
+        station -- the number of the station to analyze
+        
+        Return:
+        None"""
+        
+        from missingpy import MissForest
+        
+        # Identify the columns with missing values
+        columns_with_missing_values = self.dataset.columns[self.dataset.isnull().any()].tolist()
+        
+        # Create a separate dataframe with only the columns with missing values
+        df_missing = self.dataset[columns_with_missing_values]
+        
+        # Create an instance of the missForest algorithm and impute missing values
+        imputer = MissForest(criterion='squared_error')
+        imputed_df_missing = imputer.fit_transform(df_missing)
+        
+        # Replace missing values in the original dataframe with imputed values
+        self.dataset[columns_with_missing_values] = imputed_df_missing
+        
+        # Save the new dataframe
+        self.dataset.to_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8', index=False)
+        
 class Model():
 
-    def __init__(self) -> None:
-        self.dataset = data.labeled_901()
+    def __init__(self, station, columns) -> None:
+        self.station = station
+        self.columns = columns
+        if self.station == 901:
+            self.dataset = data.labeled.labeled_901()
+        elif self.station == 902:
+            self.dataset = data.labeled.labeled_902()
+        elif self.dataset == 904:
+            self.dataset = data.labeled.labeled_904()
+        elif self.dataset == 905:
+            self.dataset = data.labeled.labeled_905()
+        elif self.dataset == 906:
+            self.dataset = data.labeled.labeled_906()
+        elif self.dataset == 907:
+            self.dataset = data.labeled.labeled_907()
+        elif self.dataset == 910:
+            self.dataset = data.labeled.labeled_910()
+        elif self.dataset == 916:
+            self.dataset = data.labeled.labeled_916()
 
     @tictoc
     def logreg(self):
@@ -104,14 +258,17 @@ class Model():
 
         Return:
         None"""
-
+        
         from river import compose
         from river import metrics
         from river import linear_model
-        # from river import preprocessing
-
+        from river import preprocessing
+        
+        # Convert dictionary keys to a list of column names
+        column_names = list(self.columns.keys())
+        
         model = compose.Pipeline(
-            compose.Select("year", "month", "day", "hour", "minute", "second", "week", "weekOrder", "ammonium_901", "conductivity_901", "dissolved_oxygen_901", "ph_901", "turbidity_901", "water_temperature_901"),
+            compose.Select(*column_names),
             # Add the standard scaler and see if it works: preprocessing.StandardScaler(),
             linear_model.LogisticRegression()
         )
@@ -261,10 +418,12 @@ if __name__ == '__main__':
 
     station = 901
     
+    # Test that the methods work
     # Impute the data
     imputator = Imputator(station=901)
+    columns = imputator.selector()
     imputator.imputation_del()
     
-    # # Call the model
-    # model = Model()
-    # model.hoefftree()
+    # Call the model
+    model = Model(station=901, columns=columns)
+    model.logreg()
