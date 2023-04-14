@@ -234,17 +234,17 @@ class Model():
             self.dataset = data.labeled.labeled_901()
         elif self.station == 902:
             self.dataset = data.labeled.labeled_902()
-        elif self.dataset == 904:
+        elif self.station == 904:
             self.dataset = data.labeled.labeled_904()
-        elif self.dataset == 905:
+        elif self.station == 905:
             self.dataset = data.labeled.labeled_905()
-        elif self.dataset == 906:
+        elif self.station == 906:
             self.dataset = data.labeled.labeled_906()
-        elif self.dataset == 907:
+        elif self.station == 907:
             self.dataset = data.labeled.labeled_907()
-        elif self.dataset == 910:
+        elif self.station == 910:
             self.dataset = data.labeled.labeled_910()
-        elif self.dataset == 916:
+        elif self.station == 916:
             self.dataset = data.labeled.labeled_916()
 
     @tictoc
@@ -415,12 +415,11 @@ if __name__ == '__main__':
 
     station = 901
     
-    # Test that the methods work
     # Impute the data
-    imputator = Imputator(station=901)
+    imputator = Imputator(station=station)
     columns = imputator.selector()
     imputator.imputation_del()
     
     # Call the model
-    model = Model(station=901, columns=columns)
+    model = Model(station=station, columns=columns)
     model.logreg()
