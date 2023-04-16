@@ -418,8 +418,8 @@ if __name__ == '__main__':
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    # imputator.imputation_knn()
+    imputator.imputation_linreg()
     
     # Call the model
     model = Model(station=station, columns=columns)
-    model.halfspace()
+    model.logreg()
