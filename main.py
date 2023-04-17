@@ -418,7 +418,7 @@ if __name__ == '__main__':
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    imputator.imputation_linreg()
+    imputator.imputation_del()
     
     # Call the model
     model = Model(station=station, columns=columns)
