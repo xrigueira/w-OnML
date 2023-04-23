@@ -340,6 +340,8 @@ class Model():
 
         print(metric)
 
+    # TODO: Test a couple more models. See documentation -> start by the anomaly methods https://riverml.xyz/0.15.0/api/overview/
+
     @tictoc
     def logreg_imb(self):
         """This method implements logistic regression with imbalanced data.
