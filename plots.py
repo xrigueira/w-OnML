@@ -195,9 +195,49 @@ def label_analyzer():
     # Show the plot
     plt.show()
 
-def multivar_plotter():
-    pass
+def multivar_plotter(station):
+    """This computes a multivariate plot of each anomaly in a 
+    specific database.
+    ----------
+    Arguments:
+    None
+
+    Return:
+    None"""
+
+    # Read the database
+    df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
+    
+    # Normalize the data
+    from sklearn.preprocessing import StandardScaler
+
+    scaler = StandardScaler()
+    df.iloc[:, 9:-1] = scaler.fit_transform(df.iloc[:, 9:-1])
+
+    # Drop the not-needed columns: year, month, day, hour, minute, second, week, and weekOrder
+    df.drop(df.columns[1:9], axis=1, inplace=True)
+
+    # From here it is all development
+    # Plot the first 50 rows
+    # Set the 'date' column as the index of the DataFrame
+    df.set_index('date', inplace=True)
+
+    # Select the first 50 rows of the DataFrame
+    df = df.iloc[:50, :]
+
+    # Plot the DataFrame
+    df.plot(figsize=(10,5))
+    plt.show()
+
+    # Filter the data to select only rows where the label column has a value of 1
+    # df = df[df["label"] == 1]
+
+    # Continue asking if there is a way to know when there is a jump in the dates,
+    # in other words, when they are not consecutive. Once I have this, I can get the
+    # indexes when there is a jump, select that part of the database with iloc[index_being:index_end, :]
+    # plot it with df.plot(figsize=(10,5)) and save it with a nice title, etc.
+
 
 if __name__ == '__main__':
 
-    multivar_plotter()
+    multivar_plotter(station=901)
