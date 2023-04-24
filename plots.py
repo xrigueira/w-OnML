@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 plt.style.use('ggplot')
 
 @tictoc
-def gapper():
+def gap_percent_per_variable():
     """This function gets the percentage of gaps in every variable of each dataset
     and saves it to a csv file.
     ----------
@@ -54,8 +54,7 @@ def gapper():
     gaps.to_csv(f'data/gaps.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
-def columner():
-
+def gap_percent_per_rwo():
     """This function gets the percentage of rows mising a certain number of values [1,..,8]
     and saves it to a csv file.
     ----------
@@ -90,7 +89,7 @@ def columner():
     cols.to_csv(f'data/cols.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
-def analyzer():
+def gap_analyzer():
     """This function analyzes the number of gaps, their lenght and the number of variables affected in each case.
     ----------
     Arguments:
@@ -140,7 +139,7 @@ def analyzer():
     # Also get the number of anomalies that have missing values and the percentage with respect to the total number of anomalies: To program this: count number of rows that have gaps and have a label == 1
 
 @tictoc
-def anomalier():
+def label_analyzer():
     """This function studies the number of rows labeled as anomalies and those which have missing values but
     are also labeled as anomalous.
     ----------
@@ -196,34 +195,9 @@ def anomalier():
     # Show the plot
     plt.show()
 
-@tictoc
-def deleter(station, variable):
-    """This function deletes the undesired variables in the merged and normalized 
-    databases of the defined station.
-    ----------
-    Arguments:
-    station -- the station number as an integer.
-    variable -- the name of the variable to delete as a string.
-
-    Return:
-    None"""
-
-    station = 916
-    variables = ['absorbance']
-
-    # Read the dfs
-    merged = pd.read_csv(f'data/merged_{station}.csv', sep=',', encoding='utf-8')
-    normed = pd.read_csv(f'data/normed_{station}.csv', sep=',', encoding='utf-8')
-
-    for var in variables:
-
-        merged.drop(f'{var}_{station}', inplace=True, axis=1)
-        normed.drop(f'{var}_{station}', inplace=True, axis=1)
-
-    # Save the files
-    merged.to_csv(f'data/merged_{station}.csv', sep=',', encoding='utf-8', index=False)
-    normed.to_csv(f'data/normed_{station}.csv', sep=',', encoding='utf-8', index=False)
+def multivar_plotter():
+    pass
 
 if __name__ == '__main__':
 
-    anomalier()
+    multivar_plotter()

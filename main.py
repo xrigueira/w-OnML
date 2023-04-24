@@ -250,6 +250,7 @@ class Model():
     @tictoc
     def logreg(self):
         """This method performs logist regression.
+        Fast and good results.
         ----------
         Arguments:
         self.database = loaded data.
@@ -284,9 +285,10 @@ class Model():
     @tictoc
     def hoefftree(self):
         """This method performs classification with Hoeffding trees.
+        Good results.
         ----------
         Arguments: 
-        self.dataset: loaded dataset
+        self.dataset (pd.dataframe): loaded dataset
         
         Return:
         None"""
@@ -315,7 +317,7 @@ class Model():
         packed together in windows (which is our case).
         ----------
         Arguments: 
-        self.dataset: loaded dataset
+        self.dataset (pd.dataframe): loaded dataset
         
         Return:
         None"""
@@ -340,7 +342,171 @@ class Model():
 
         print(metric)
 
-    # TODO: Test a couple more models. See documentation -> start by the anomaly methods https://riverml.xyz/0.15.0/api/overview/
+    @tictoc
+    def oneclasssvm(self):
+        """This method performs anomaly detection with a one class SVM.
+        The results are not that great probably due to the complexity of
+        the problem. Most likely, the frontiers learn by the SVM are not
+        good enough.
+        ----------
+        Arguments: 
+        self.dataset (pd.dataframe): loaded dataset
+        
+        Return:
+        None"""
+
+        from river import anomaly
+        from river import compose
+        from river import metrics
+        from river import preprocessing
+
+        model = compose.Pipeline(
+            compose.Select(*self.columns),
+            preprocessing.StandardScaler(),
+            anomaly.QuantileFilter(
+                anomaly.OneClassSVM(),
+                q=0.98
+            )
+        )
+
+        metric = metrics.ROCAUC()
+
+        for x, y in self.dataset:
+            score = model.score_one(x)
+            is_anomaly = model['QuantileFilter'].classify(score)
+            model = model.learn_one(x)
+            metric = metric.update(y, is_anomaly)
+
+        print(metric)
+
+    @tictoc
+    def amfclassifier(self):
+        """This method implements the Aggregated Mondrian Forest
+        classifier. The results were good, but it is too slow.
+        ----------
+        Arguments
+        self.dataset (pd.dataframe): loaded dataset
+        
+        Return:
+        None"""
+
+        from river import forest
+        from river import compose
+        from river import metrics
+        from river import evaluate
+        from river import preprocessing
+
+        model = compose.Pipeline(
+            compose.Select(*self.columns),
+            preprocessing.StandardScaler(),
+            forest.AMFClassifier(
+                n_estimators=10,
+                use_aggregation=True,
+                dirichlet=0.5,
+                seed=1
+            )
+        )
+
+        metric = metrics.Accuracy()
+
+        evaluate.progressive_val_score(self.dataset, model, metric)
+
+        print(metric)
+
+    @tictoc
+    def arfclassifier(self):
+        """This method implements the adaptative random forest classifier.
+        Good results.
+        ----------
+        Arguments
+        self.dataset (pd.dataframe): loaded dataset
+        
+        Return:
+        None
+        """
+
+        from river import forest
+        from river import compose
+        from river import metrics
+        from river import evaluate
+        from river import preprocessing
+
+        model = compose.Pipeline(
+            compose.Select(*self.columns),
+            preprocessing.StandardScaler(),
+            forest.ARFClassifier(seed=1)
+        )
+
+        metric = metrics.Accuracy()
+
+        evaluate.progressive_val_score(self.dataset, model, metric)
+
+        print(metric)
+
+    @tictoc
+    def fastdecisiontree(self):
+        """This method implements the Extremely Fast Decision Tree 
+        classifier. Also refered to as the Hoeffding AnyTime Tree (HATT).
+        Good results.
+        ----------
+        Arguments:
+        self.dataset (pd.dataframe): loaded dataset
+        
+        Return:
+        None"""
+
+        from river import tree
+        from river import compose
+        from river import metrics
+        from river import evaluate
+        from river import preprocessing
+
+        model = compose.Pipeline(
+            compose.Select(*self.columns),
+            preprocessing.StandardScaler(),
+            tree.ExtremelyFastDecisionTreeClassifier(grace_period=1000,
+                delta=1e-5,
+                min_samples_reevaluate=1000)
+        )
+
+        metric = metrics.Accuracy()
+
+        evaluate.progressive_val_score(self.dataset, model, metric)
+
+        print(metric)
+
+    @tictoc
+    def sgt(self):
+        """This method implements stochastic gradient tree for 
+        binary classification.
+        ----------
+        Arguments:
+        self.dataset (pd.dataframe): loaded dataset
+        
+        Return:
+        None"""
+
+        from river import tree
+        from river import compose
+        from river import metrics
+        from river import evaluate
+        from river import preprocessing
+
+        model = compose.Pipeline(
+            compose.Select(*self.columns),
+            preprocessing.StandardScaler(),
+            tree.SGTClassifier(
+                feature_quantizer=tree.splitter.StaticQuantizer(
+                n_bins=32, warm_start=10
+                )
+            )
+        )
+
+        metric = metrics.Accuracy()
+
+        evaluate.progressive_val_score(self.dataset, model, metric)
+
+        print(metric)
 
     @tictoc
     def logreg_imb(self):
@@ -424,4 +590,4 @@ if __name__ == '__main__':
     
     # Call the model
     model = Model(station=station, columns=columns)
-    model.logreg()
+    model.fastdecisiontree()

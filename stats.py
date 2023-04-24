@@ -1,7 +1,8 @@
+import numpy as np
 import pandas as pd
 import seaborn as sb
 import matplotlib.pyplot as plt
-# plt.style.use('ggplot')
+plt.style.use('ggplot')
 
 """This file includes several functions analyze the data"""
 
@@ -29,6 +30,33 @@ def correlation(dataframe, station):
     plt.title(f'Correlation matrix station {station}')
     plt.show()
 
+def biplot(score,coef,labels=None):
+
+    xs = score[:,0]
+    ys = score[:,1]
+    n = coef.shape[0]
+    scalex = 1.0/(xs.max() - xs.min())
+    scaley = 1.0/(ys.max() - ys.min())
+    plt.scatter(xs * scalex,ys * scaley,
+                s=5, 
+                color='orange')
+
+    for i in range(n):
+        plt.arrow(0, 0, coef[i,0], 
+                coef[i,1],color = 'purple',
+                alpha = 0.5)
+        plt.text(coef[i,0]* 1.15, 
+                coef[i,1] * 1.15, 
+                labels[i], 
+                color = 'darkblue', 
+                ha = 'center', 
+                va = 'center')
+
+    plt.xlabel("PC{}".format(1))
+    plt.ylabel("PC{}".format(2))    
+
+    # plt.figure()
+
 def pca(dataframe, station):
     """Performs principal components analysis.
     ----------
@@ -39,9 +67,49 @@ def pca(dataframe, station):
     Returns:
     None"""
     
-    # Look up how to do this
-    # https://www.google.com/search?q=pca+analysis+python&rlz=1C1FKPE_esES940ES940&oq=pca+analysis+python&aqs=chrome..69i57.3892j0j15&sourceid=chrome&ie=UTF-8
-    # https://jakevdp.github.io/PythonDataScienceHandbook/05.09-principal-component-analysis.html
+    from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
+
+    # Separate the data and label columns
+    X = StandardScaler().fit_transform(dataframe.iloc[:, 9:-1])
+    y = dataframe.iloc[:, -1]
+
+    # Peform PCA
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(X)
+
+    # Get the explained variance ratio of the principal components
+    explained_var = pca.explained_variance_ratio_
+
+    # Print the variance explained by each component
+    print(f'Explained variance ratio: {explained_var}')
+
+    # Bar plot of explained_variance
+    # plt.bar(
+    #     range(1,len(pca.explained_variance_)+1),
+    #     pca.explained_variance_,
+    #     color='blue'
+    #     )
+    
+    # plt.plot(
+    #     range(1,len(pca.explained_variance_ )+1),
+    #     np.cumsum(pca.explained_variance_),
+    #     c='red',
+    #     label='Cumulative Explained Variance')
+    
+    # plt.legend(loc='upper left')
+    # plt.xlabel('Number of components')
+    # plt.ylabel('Explained variance (eignenvalues)')
+    # plt.title('Scree plot')
+    # plt.show()
+
+    # Biplot
+    pca_dataframe = pd.DataFrame(data=X_pca, columns=['PC1', 'PC2'])
+    
+    plt.title('Biplot of PCA')
+    biplot(X_pca, np.transpose(pca.components_), list(dataframe.iloc[:, 9:-1].columns))
+
+    plt.show()
 
 if __name__ == '__main__':
     
@@ -49,6 +117,6 @@ if __name__ == '__main__':
     station = 901
     
     # Read the data
-    df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
+    df = pd.read_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8')
     
-    correlation(dataframe=df, station=station)
+    pca(dataframe=df, station=station)
