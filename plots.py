@@ -195,6 +195,7 @@ def label_analyzer():
     # Show the plot
     plt.show()
 
+@tictoc
 def multivar_plotter(station):
     """This computes a multivariate plot of each anomaly in a 
     specific database.
@@ -248,23 +249,14 @@ def multivar_plotter(station):
         
         # Save the image
         fig = fig.get_figure()
-        fig.savefig(f'images/anomaly_{counter}_{station}.png', dpi=300)
+        fig.savefig(f'images/anomaly_{station}_{counter}.png', dpi=300)
         
         # Close the fig for better memory management
         plt.close(fig=fig)
         
         counter += 1
-        
-        
-        
-
-
-    # Continue asking if there is a way to know when there is a jump in the dates,
-    # in other words, when they are not consecutive. Once I have this, I can get the
-    # indexes when there is a jump, select that part of the database with iloc[index_being:index_end, :]
-    # plot it with df.plot(figsize=(10,5)) and save it with a nice title, etc.
 
 
 if __name__ == '__main__':
 
-    multivar_plotter(station=901)
+    multivar_plotter(station=904)
