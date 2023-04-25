@@ -206,31 +206,58 @@ def multivar_plotter(station):
     None"""
 
     # Read the database
-    df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
+    df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8', parse_dates=['date'])
     
     # Normalize the data
     from sklearn.preprocessing import StandardScaler
-
+    
     scaler = StandardScaler()
     df.iloc[:, 9:-1] = scaler.fit_transform(df.iloc[:, 9:-1])
 
     # Drop the not-needed columns: year, month, day, hour, minute, second, week, and weekOrder
     df.drop(df.columns[1:9], axis=1, inplace=True)
-
-    # From here it is all development
-    # Plot the first 50 rows
-    # Set the 'date' column as the index of the DataFrame
-    df.set_index('date', inplace=True)
-
-    # Select the first 50 rows of the DataFrame
-    df = df.iloc[:50, :]
-
-    # Plot the DataFrame
-    df.plot(figsize=(10,5))
-    plt.show()
-
+    
     # Filter the data to select only rows where the label column has a value of 1
-    # df = df[df["label"] == 1]
+    df_index = df[df["label"] == 1]
+    
+    # Create a new column with the difference between consecutive dates
+    date_diff = (df_index['date'] - df_index['date'].shift()).fillna(pd.Timedelta(minutes=15))
+
+    # Create groups of consecutive dates
+    date_group = (date_diff != pd.Timedelta(minutes=15)).cumsum()
+
+    # Get the starting and ending indexes of each group of consecutive dates
+    grouped = df.groupby(date_group)
+    consecutive_dates_indexes = [(group.index[0], group.index[-1]) for _, group in grouped]
+    
+    # Set date a the index column
+    df.set_index('date', inplace=True)
+    
+    # Drop the label column
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    
+    # Plot each anomaly
+    counter = 1
+    for i in consecutive_dates_indexes:
+
+        fig = df.iloc[int(i[0]):int(i[1]), :].plot(figsize=(10,5))
+        plt.title(f"Anomaly {counter} station {station}")
+        plt.xlabel('Date')
+        plt.ylabel('Standarized values')
+        # plt.show()
+        
+        # Save the image
+        fig = fig.get_figure()
+        fig.savefig(f'images/anomaly_{counter}_{station}.png', dpi=300)
+        
+        # Close the fig for better memory management
+        plt.close(fig=fig)
+        
+        counter += 1
+        
+        
+        
+
 
     # Continue asking if there is a way to know when there is a jump in the dates,
     # in other words, when they are not consecutive. Once I have this, I can get the
