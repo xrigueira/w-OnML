@@ -115,7 +115,7 @@ def pca(dataframe, station):
 if __name__ == '__main__':
     
     # Define the station number
-    station = 916
+    station = 901
     
     # Read the data
     df = pd.read_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8')

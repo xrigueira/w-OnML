@@ -259,4 +259,4 @@ def multivar_plotter(station):
 
 if __name__ == '__main__':
 
-    multivar_plotter(station=904)
+    multivar_plotter(station=901)
