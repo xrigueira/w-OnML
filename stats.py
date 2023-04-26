@@ -30,7 +30,7 @@ def correlation(dataframe, station):
     plt.title(f'Correlation matrix station {station}')
     plt.show()
 
-def biplot(score,coef,labels=None):
+def biplot(score, coef, station, labels=None):
 
     xs = score[:,0]
     ys = score[:,1]
@@ -43,15 +43,16 @@ def biplot(score,coef,labels=None):
 
     for i in range(n):
         plt.arrow(0, 0, coef[i,0], 
-                coef[i,1],color = 'purple',
+                coef[i,1], color = 'purple',
                 alpha = 0.5)
-        plt.text(coef[i,0]* 1.15, 
-                coef[i,1] * 1.15, 
+        plt.text(coef[i,0]* 1.05, 
+                coef[i,1] * 1.05, 
                 labels[i], 
                 color = 'darkblue', 
                 ha = 'center', 
                 va = 'center')
 
+    plt.title(f'Biplot station {station}')
     plt.xlabel("PC{}".format(1))
     plt.ylabel("PC{}".format(2))    
 
@@ -85,38 +86,40 @@ def pca(dataframe, station):
     print(f'Explained variance ratio: {explained_var}')
 
     # Bar plot of explained_variance
-    # plt.bar(
-    #     range(1,len(pca.explained_variance_)+1),
-    #     pca.explained_variance_,
-    #     color='blue'
-    #     )
+    plt.bar(
+        range(1,len(pca.explained_variance_)+1),
+        pca.explained_variance_,
+        color='blue'
+        )
     
-    # plt.plot(
-    #     range(1,len(pca.explained_variance_ )+1),
-    #     np.cumsum(pca.explained_variance_),
-    #     c='red',
-    #     label='Cumulative Explained Variance')
+    plt.plot(
+        range(1,len(pca.explained_variance_ )+1),
+        np.cumsum(pca.explained_variance_),
+        c='red',
+        label='Cumulative Explained Variance')
     
-    # plt.legend(loc='upper left')
-    # plt.xlabel('Number of components')
-    # plt.ylabel('Explained variance (eignenvalues)')
-    # plt.title('Scree plot')
-    # plt.show()
+    plt.legend(loc='upper left')
+    plt.xlabel('Number of components')
+    plt.ylabel('Explained variance (eignenvalues)')
+    plt.title(f'Scree plot station {station}')
+    plt.show()
 
     # Biplot
     pca_dataframe = pd.DataFrame(data=X_pca, columns=['PC1', 'PC2'])
     
     plt.title('Biplot of PCA')
-    biplot(X_pca, np.transpose(pca.components_), list(dataframe.iloc[:, 9:-1].columns))
+    biplot(X_pca, np.transpose(pca.components_), station, list(dataframe.iloc[:, 9:-1].columns))
 
     plt.show()
 
 if __name__ == '__main__':
     
     # Define the station number
-    station = 901
+    station = 916
     
     # Read the data
     df = pd.read_csv(f'data/labeled_{station}_cle.csv', sep=',', encoding='utf-8')
     
+    correlation(dataframe=df, station=station)
+
     pca(dataframe=df, station=station)
