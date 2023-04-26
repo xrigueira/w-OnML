@@ -1,6 +1,9 @@
 import data
+import itertools
 import pandas as pd
 from tictoc import tictoc
+
+"""This file is to test what combinations of variables output the best results"""
 
 class Imputator():
     
@@ -581,13 +584,42 @@ class Model():
 
 if __name__ == '__main__':
 
-    station = 901
+    station = 902
+
+    # Read the data
+    df = pd.read_csv(f'data/labeled_{station}_ori.csv', sep=',', encoding='utf-8')
     
-    # Impute the data
-    imputator = Imputator(station=station)
-    columns = imputator.selector()
-    imputator.imputation_del()
+    # Get the names of the variables
+    names = df.columns[9:-1].to_list()
+
+    # Get all the possible combinations of variables
+    combinations = []
+    for i in range(1, len(names) + 1):
+        for combo in itertools.combinations(names, i):
+            combinations.append(list(combo))
+    print(combinations)
+    # Get the data for each combination, save it and process it
+    # results = pd.DataFrame(columns=['combination'])
+    # for combination in combinations[0]:
+    for i in range(1):
+        # Get the data for each combination. OJO: combination, no combinations (en caso de que se active el for loop)
+        df = df.drop(columns=['year', 'month', 'day', 'hour', 'minute', 'second', 'week', 'weekOrder'] + [elem for elem in names if elem not in combinations[0]], axis=1)
+
+        # Save the data
+        df.to_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8', index=False)
     
-    # Call the model
-    model = Model(station=station, columns=columns)
-    model.logreg()
+        # Impute the data
+        imputator = Imputator(station=station)
+        columns = imputator.selector()
+        imputator.imputation_del()
+        
+        # Call the model
+        model = Model(station=station, columns=columns)
+        model.hoefftree()
+
+        # Add the results of each iteration to the dataframe
+        # results.loc[len(results.index)] = [combination]
+    
+    # Save the results
+    # results.to_csv(f'results.csv', sep=',', encoding='utf-8', index=True)
+
