@@ -2,7 +2,6 @@
 of each merged file"""
 
 import os
-import random
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -10,6 +9,8 @@ import plotly.express as px
 from tictoc import tictoc
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
+
+import seaborn as sb
 
 @tictoc
 def gap_percent_per_variable():
@@ -54,7 +55,7 @@ def gap_percent_per_variable():
     gaps.to_csv(f'data/gaps.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
-def gap_percent_per_rwo():
+def gap_percent_per_row():
     """This function gets the percentage of rows mising a certain number of values [1,..,8]
     and saves it to a csv file.
     ----------
@@ -89,19 +90,48 @@ def gap_percent_per_rwo():
     cols.to_csv(f'data/cols.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
-def gap_analyzer():
-    """This function analyzes the number of gaps, their lenght and the number of variables affected in each case.
+def bubble_histogram():
+    
+    # Read the data
+    data = np.load('gap_lengths.npy')
+    
+    # My data does not look with this idea so I leave this normal data here just for visualization
+    # data = np.random.normal(0, 3, 1000)
+    
+    mean = sum(data) / len(data)
+    
+    x_values = [int((num - mean)) for num in data]
+    
+    y_values = []
+    assigned_y = {}
+
+    for x in x_values:
+        if x in assigned_y:
+            y = assigned_y[x] + np.random.uniform(0.05, 0.25)  # assign slightly higher y value if x is already assigned
+        else:
+            y = 0  # assign 0 if x is not already assigned
+        y_values.append(y)
+        assigned_y[x] = y  # add (x,y) pair to the dictionary
+    
+    # Distort the x so it does not look like perfect columns
+    x_values = [(num + np.random.uniform(0.25, 1)) for num in x_values]
+    
+    # Create the bubble plot
+    sb.scatterplot(x=x_values, y=y_values, size=data, hue=data, sizes=(10, 500), palette='rainbow', legend=False)
+    
+    plt.show()
+
+@tictoc
+def gap_length(files):
+    """This function gets several basic statistic on the number of gaps per station and row.
     ----------
     Arguments:
-    station -- the number of the station to analyze
+    files (list) -- the numbers of the station to analyze
     
     Return:
     None"""
     
-    gaps = pd.DataFrame()
-
-    # Define file names
-    files = ['901', '902', '904', '905', '906', '907', '910', '916']
+    gaps = pd.DataFrame(columns=['station', 'min', 'mean', 'std', 'max', 'Q1', 'Q2', 'Q3', 'P95'])
     
     for f in files:
         
@@ -110,8 +140,6 @@ def gap_analyzer():
 
         # Get the number of missing values per row in the database
         missing = df.isnull().sum(axis=1).tolist()
-        
-        gaps[f] = missing
         
         # Get the length of each gap
         gap_lenghts = []
@@ -124,32 +152,94 @@ def gap_analyzer():
                 gap_lenghts.append(gap_counter)
                 gap_counter = 0
         
-        plt.plot(gap_lenghts, color=tuple(random.random() for _ in range(3)))
-        plt.title(f'Gap length {f}')
-        plt.ylabel('Length of each gap')
-        plt.show()
-    
-    # Plots
-    plt.hist(gaps.values, alpha=0.80, label=gaps.columns)
-    plt.title('Missing values boxplot')
-    plt.ylabel('Missing values per row')
-    plt.legend()
-    plt.show()
+        maximum, minimum = max(gap_lenghts), min(gap_lenghts)
+        mean, std = np.mean(gap_lenghts), np.std(gap_lenghts)
 
-    # Also get the number of anomalies that have missing values and the percentage with respect to the total number of anomalies: To program this: count number of rows that have gaps and have a label == 1
+        Q1, Q2, Q3 = np.percentile(gap_lenghts, 25), np.percentile(gap_lenghts, 50), np.percentile(gap_lenghts, 75)
+        p95 = np.percentile(gap_lenghts, 95)
+        
+        gaps.loc[len(gaps.index)] = [f, minimum, mean, std, maximum, Q1, Q2, Q3, p95]
+    
+    # Save the results
+    gaps.to_csv(f'data/gaps.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
-def label_analyzer():
+def gap_row_matplot(file, max_missing_values):
+    """This function analyzes the number of gaps, their lenght and the number of variables affected in each case.
+    ----------
+    Arguments:
+    files (int) -- the numbers of the station to analyze
+    max_missing_values (int) -- the number of water quality variables in the database
+    
+    Return:
+    None"""
+    
+    # Read the database
+    df = pd.read_csv(f'data/labeled_{file}.csv', sep=',', encoding='utf-8')
+
+    # Get the number of missing values per row in the database
+    missing = df.isnull().sum(axis=1).tolist()
+    
+    # Count number of rows with 1, 2, or 3 missing values
+    count = {}
+    
+    for i in range(0, max_missing_values + 1):
+        count[f'{i} missing values'] = 0
+    
+    for val in missing:
+        if val <= max_missing_values:
+            count[f'{val} missing values'] += 1
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    patches, texts, pcts = plt.pie(list(count.values()), labels=list(count.keys()), 
+                                    autopct='%1.1f%%',
+                                    wedgeprops = {"linewidth": 1, "edgecolor": "white"},)
+    # For each wedge, set the corresponding text label color to the wedge's
+    for i, patch in enumerate(patches):
+        texts[i].set_color(patch.get_facecolor())
+        plt.setp(pcts, color='white')
+        plt.setp(texts, fontweight=600)
+    
+    plt.title(f'Missing values per row in {file}')
+    plt.show()
+
+def gap_row_pyplot(file, max_missing_values):
+    """This function analyzes the number of gaps, their lenght and the number of variables affected in each case.
+    ----------
+    Arguments:
+    files (int) -- the numbers of the station to analyze
+    max_missing_values (int) -- the number of water quality variables in the database
+    
+    Return:
+    None"""
+    
+    # Continue improving the presentation based on this https://plotly.com/python/pie-charts/
+    
+    # Read the database
+    df = pd.read_csv(f'data/labeled_{file}.csv', sep=',', encoding='utf-8')
+
+    # Get the number of missing values per row in the database
+    missing = df.isnull().sum(axis=1)
+        
+    # Count the number of rows with missing values (1, 2, 3, ..., max_missing_values)
+    count = pd.DataFrame(index=pd.Index(range(0, max_missing_values+1), name='missing values'), columns=['count'])
+    
+    for i in range(0, max_missing_values + 1):
+        count.loc[i, 'count'] = (missing== i).sum()
+        
+    fig = px.pie(count, values='count', names=count.index, title='Pie chart')
+    fig.show()
+    
+@tictoc
+def label_analyzer(files):
     """This function studies the number of rows labeled as anomalies and those which have missing values but
     are also labeled as anomalous.
     ----------
     Arguments:
-    None
+    files (list) -- the numbers of the station to analyze
     
     Return:
     None"""
-    # Define file names
-    files = ['901', '902', '904', '905', '906', '907', '910', '916']
     
     # Initialize lists to store the counts
     anomalies_counts = []
@@ -190,7 +280,7 @@ def label_analyzer():
     # Add axis labels and a title
     ax.set_xlabel('File')
     ax.set_ylabel('Count')
-    ax.set_title('Anomalies and Missing Anomalies by File')
+    ax.set_title('Anomalies and missing anomalies by file')
 
     # Show the plot
     plt.show()
@@ -206,6 +296,8 @@ def multivar_plotter(station):
     Return:
     None"""
 
+    # Improve https://www.pythoncharts.com/
+    
     # Read the database
     df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8', parse_dates=['date'])
     
@@ -257,6 +349,20 @@ def multivar_plotter(station):
         counter += 1
 
 
-if __name__ == '__main__':
 
-    multivar_plotter(station=901)
+if __name__ == '__main__':
+    
+    gap_row_matplot(file=901, max_missing_values=6)
+    
+    gap_row_pyplot(file=901, max_missing_values=6)
+    
+    # To call the pyplot for several files    
+    # files = [
+    # ('labeled_901.csv', 6),
+    # ('data2.csv', 2), # Change the rest
+    # ('data3.csv', 4),
+    # ]
+
+    # for file_name, max_missing_values in files:
+    #     gap_row_pyplot(file_name, max_missing_values)
+    
