@@ -10,7 +10,7 @@ from normalizer import normalizer
 files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
 
 varNames = [i[0:-4] for i in files] # Extract the names of the variables, e.g.: pH_901.txt (4 intervals already appended following temporal sequence)
-stations = [980] # Define with stations to process
+stations = [902, 904, 905, 906, 907, 910, 916] # Define with stations to process
 
 # Define the time frame we want to use (a: months, b: weeks, c: days)
 timeFrame = 'b'
@@ -24,9 +24,9 @@ if __name__ == '__main__':
         checkGaps(File=f'{varName}.txt', timestep=timeStep)
         print('[INFO] checkGaps() DONE')
 
-        # Add time-related columns to the data. See columner.py for details
-        dater(File=f'{varName}_full.csv', timestep=timeStep)
-        print('[INFO] normalizer() DONE')
+        # Add time-related columns to the data. See dater.py for details
+        # dater(File=f'{varName}_full.csv', timestep=timeStep)
+        # print('[INFO] normalizer() DONE')
         
     
     for station in stations:

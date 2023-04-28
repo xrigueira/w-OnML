@@ -7,7 +7,7 @@ file"""
 def joiner(station):
     
     # List all csv files in /data
-    csv_files = glob.glob(f'data/*{station}_col.csv')
+    csv_files = glob.glob(f'data/*{station}_full.csv')
     
     # Initialize an empty dataframe to store the merged data
     merged_df = pd.read_csv(csv_files[0], sep=',')
@@ -24,5 +24,5 @@ def joiner(station):
         merged_df = pd.merge(merged_df, df, on=cols)
 
     # Save the merged dataframe to a new CSV file
-    merged_df.insert(9, first_var, merged_df.pop(first_var))
+    merged_df.insert(1, first_var, merged_df.pop(first_var))
     merged_df.to_csv(f'data/merged_{station}.csv', sep=',', encoding='utf-8', index=False)
