@@ -7,9 +7,11 @@ from tictoc import tictoc
 
 class Imputator():
     
-    def __init__(self, station) -> None:
+    def __init__(self, station, col_begin, col_end) -> None:
         self.dataset = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
         self.station = station
+        self.col_begin = col_begin
+        self.col_end = col_end
     
     def selector(self):
         """This function returns the column names of
@@ -584,7 +586,7 @@ class Model():
 
 if __name__ == '__main__':
 
-    station = 902
+    station = 901
 
     # Read the data
     df = pd.read_csv(f'data/labeled_{station}_ori.csv', sep=',', encoding='utf-8')
