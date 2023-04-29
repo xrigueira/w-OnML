@@ -5,12 +5,54 @@ import os
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.io as pio
 
 from tictoc import tictoc
+from matplotlib import ticker
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
 
 import seaborn as sb
+
+def labeler(varname):
+
+    """This function is just to label the plots correctly for the research papers."""
+
+    if varname == 'ammonium':
+        label_title = r'$NH_4$'
+        label_y_axis = r'$NH_4$ ' + r'$(m*g/L)$'
+    elif varname == 'conductivity':
+        label_title = r'Conductivity'
+        label_y_axis = r'Conductivity ' r'$(\mu*S/cm)$'
+    elif varname == 'nitrates':
+        label_title = r'$NO_{3^-}$'
+        label_y_axis = r'$NO_{3^-}$ ' +r'$(m*g/L)$'
+    elif varname == 'dissolved_oxygen':
+        label_title = r'$O_2$'
+        label_y_axis = r'$O_2$ ' r'$(m*g/L)$'
+    elif varname == 'pH':
+        label_title = r'pH'
+        label_y_axis = r'pH'
+    elif varname == 'temperature':
+        label_title = r'Temperature'
+        label_y_axis = r'Temperature ' +u'(\N{DEGREE SIGN}C)'
+    elif varname == 'water_temperature':
+        label_title = r'River water remperature '
+        label_y_axis = r'Temperature ' +u'(\N{DEGREE SIGN}C)'
+    elif varname == 'water_flow':
+        label_title = r'Flow'
+        label_y_axis = r'Flow ' + r'($m^3/s$)'
+    elif varname == "turbidity":
+        label_title = r'Turbidity'
+        label_y_axis = r'Turbidity ' + r'(NTU)'
+    elif varname == "rainfall":
+        label_title = r'Rainfall'
+        label_y_axis = r'Rainfall ' + r'(mm)'
+    elif varname == "water_level":
+        label_title = r'Water level'
+        label_y_axis = r'Water level ' + r'(m)'
+    
+    return label_title, label_y_axis
 
 @tictoc
 def gap_percent_per_variable():
@@ -164,51 +206,13 @@ def gap_length(files):
     gaps.to_csv(f'data/gaps.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
-def gap_row_matplot(file, max_missing_values):
-    """This function analyzes the number of gaps, their lenght and the number of variables affected in each case.
-    ----------
-    Arguments:
-    files (int) -- the numbers of the station to analyze
-    max_missing_values (int) -- the number of water quality variables in the database
-    
-    Return:
-    None"""
-    
-    # Read the database
-    df = pd.read_csv(f'data/labeled_{file}.csv', sep=',', encoding='utf-8')
-
-    # Get the number of missing values per row in the database
-    missing = df.isnull().sum(axis=1).tolist()
-    
-    # Count number of rows with 1, 2, or 3 missing values
-    count = {}
-    
-    for i in range(0, max_missing_values + 1):
-        count[f'{i} missing values'] = 0
-    
-    for val in missing:
-        if val <= max_missing_values:
-            count[f'{val} missing values'] += 1
-
-    fig, ax = plt.subplots(figsize=(6, 6))
-    patches, texts, pcts = plt.pie(list(count.values()), labels=list(count.keys()), 
-                                    autopct='%1.1f%%',
-                                    wedgeprops = {"linewidth": 1, "edgecolor": "white"},)
-    # For each wedge, set the corresponding text label color to the wedge's
-    for i, patch in enumerate(patches):
-        texts[i].set_color(patch.get_facecolor())
-        plt.setp(pcts, color='white')
-        plt.setp(texts, fontweight=600)
-    
-    plt.title(f'Missing values per row in {file}')
-    plt.show()
-
 def gap_row_pyplot(file, max_missing_values):
     """This function analyzes the number of gaps, their lenght and the number of variables affected in each case.
     ----------
     Arguments:
     files (int) -- the numbers of the station to analyze
     max_missing_values (int) -- the number of water quality variables in the database
+    All have max_missing_values = 6, but 902 and 916 which have 7
     
     Return:
     None"""
@@ -222,13 +226,23 @@ def gap_row_pyplot(file, max_missing_values):
     missing = df.isnull().sum(axis=1)
         
     # Count the number of rows with missing values (1, 2, 3, ..., max_missing_values)
-    count = pd.DataFrame(index=pd.Index(range(0, max_missing_values+1), name='missing values'), columns=['count'])
+    count = pd.DataFrame(index=pd.Index(range(0, max_missing_values+1), name='index'), columns=['missing_values', 'count'])
     
     for i in range(0, max_missing_values + 1):
-        count.loc[i, 'count'] = (missing== i).sum()
-        
-    fig = px.pie(count, values='count', names=count.index, title='Pie chart')
-    fig.show()
+        count.loc[i, 'missing_values'] = f'Rows missing {i} values'
+        count.loc[i, 'count'] = (missing==i).sum()
+    
+    # Print the results
+    print('Number of missing values per row')
+    print(count)
+    
+    fig = px.pie(count, values='count', names='missing_values',
+                color_discrete_sequence=px.colors.sequential.Blues_r)
+    fig.update_traces(textposition='inside', textinfo='percent+label', textfont_size=20)
+    fig.update_layout(showlegend=False, title=f'<b>Missing values per row in station {file}</b>')
+    # fig.update_layout(uniformtext_minsize=14, uniformtext_mode='hide')
+    # fig.show()
+    pio.write_image(fig, f'images/pie_chart_{file}.pdf', width=2.5*300, height=2.5*300, scale=1)
     
 @tictoc
 def label_analyzer(files):
@@ -278,11 +292,47 @@ def label_analyzer(files):
     ax.legend()
 
     # Add axis labels and a title
-    ax.set_xlabel('File')
+    ax.set_xlabel('Station')
     ax.set_ylabel('Count')
-    ax.set_title('Anomalies and missing anomalies by file')
+    ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+    ax.set_title('Anomalies and missing anomalies by station')
 
     # Show the plot
+    plt.show()
+    
+    # Save the image
+    fig.savefig(f'images/anomalies_missing_anomalies.png', dpi=300)
+
+def violins(variable_name, file_paths):
+    """This function plots a violin-style plot of all variables in the data available.
+    ----------
+    Arguments:
+    variable (string)-- name of the variable to plot
+    
+    Return:
+    None"""
+    
+    # Create an empty list to store the data frames
+    combined_df = pd.DataFrame()
+    
+    # Read each file and store the data frame in the combined dataframe
+    for path in file_paths:
+        df = pd.read_csv(path, sep=',', encoding='utf-8')
+        if (variable_name + path[12:16]) in df.columns:
+            combined_df = pd.concat([combined_df, df[variable_name + path[12:16]]], axis=1)
+
+    # Create the violin plot
+    fig, ax = plt.subplots(figsize=(9, 9))
+    fig.subplots_adjust(bottom=0.17) # Set the margins around the entire figure
+    sb.violinplot(data=combined_df)
+    label_title, label_y_axis = labeler(varname=variable_name)
+    plt.xlabel('Variable')
+    plt.ylabel(label_y_axis)
+    plt.xticks(rotation=45) # Change the size of the x labels
+    plt.title(label_title)
+    
+    fig.savefig(f'images/violin_{variable_name}.png', dpi=300)
+    
     plt.show()
 
 @tictoc
@@ -349,20 +399,15 @@ def multivar_plotter(station):
         counter += 1
 
 
-
 if __name__ == '__main__':
     
-    gap_row_matplot(file=901, max_missing_values=6)
+    # label_analyzer(files=[901, 902, 904, 905, 906, 907, 910, 916])
     
-    gap_row_pyplot(file=901, max_missing_values=6)
+    file_paths = ['data/labeled_901.csv', 'data/labeled_902.csv',
+                'data/labeled_904.csv', 'data/labeled_905.csv',
+                'data/labeled_906.csv', 'data/labeled_907.csv',
+                'data/labeled_910.csv', 'data/labeled_916.csv']
     
-    # To call the pyplot for several files    
-    # files = [
-    # ('labeled_901.csv', 6),
-    # ('data2.csv', 2), # Change the rest
-    # ('data3.csv', 4),
-    # ]
+    violins(variable_name='water_temperature', file_paths=file_paths)
 
-    # for file_name, max_missing_values in files:
-    #     gap_row_pyplot(file_name, max_missing_values)
-    
+
