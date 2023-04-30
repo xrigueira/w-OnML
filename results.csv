@@ -1,0 +1,64 @@
+,method,combination,result
+0,wrapper,['ammonium_901'],0.5555409244739424
+1,wrapper,['conductivity_901'],0.9955103447233026
+2,wrapper,['dissolved_oxygen_901'],0.9373586342761431
+3,wrapper,['ph_901'],0.9564260598862253
+4,wrapper,['turbidity_901'],0.9356347618601675
+5,wrapper,['water_temperature_901'],0.9727096684889442
+6,wrapper,"['ammonium_901', 'conductivity_901']",0.9955103447233026
+7,wrapper,"['ammonium_901', 'dissolved_oxygen_901']",0.9390055861758954
+8,wrapper,"['ammonium_901', 'ph_901']",0.9571318778635177
+9,wrapper,"['ammonium_901', 'turbidity_901']",0.9364589810435638
+10,wrapper,"['ammonium_901', 'water_temperature_901']",0.9728268738296232
+11,wrapper,"['conductivity_901', 'dissolved_oxygen_901']",0.9955103447233026
+12,wrapper,"['conductivity_901', 'ph_901']",0.9955103447233026
+13,wrapper,"['conductivity_901', 'turbidity_901']",0.9955103355981311
+14,wrapper,"['conductivity_901', 'water_temperature_901']",0.9955103447233026
+15,wrapper,"['dissolved_oxygen_901', 'ph_901']",0.9711746405613778
+16,wrapper,"['dissolved_oxygen_901', 'turbidity_901']",0.9692801377332984
+17,wrapper,"['dissolved_oxygen_901', 'water_temperature_901']",0.983762236492908
+18,wrapper,"['ph_901', 'turbidity_901']",0.9738693062809752
+19,wrapper,"['ph_901', 'water_temperature_901']",0.983644508209708
+20,wrapper,"['turbidity_901', 'water_temperature_901']",0.9835249651872718
+21,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901']",0.9955103447233026
+22,wrapper,"['ammonium_901', 'conductivity_901', 'ph_901']",0.9955103447233026
+23,wrapper,"['ammonium_901', 'conductivity_901', 'turbidity_901']",0.9955103355981311
+24,wrapper,"['ammonium_901', 'conductivity_901', 'water_temperature_901']",0.9955103447233026
+25,wrapper,"['ammonium_901', 'dissolved_oxygen_901', 'ph_901']",0.9715261728190204
+26,wrapper,"['ammonium_901', 'dissolved_oxygen_901', 'turbidity_901']",0.9692808284385878
+27,wrapper,"['ammonium_901', 'dissolved_oxygen_901', 'water_temperature_901']",0.9837622236240763
+28,wrapper,"['ammonium_901', 'ph_901', 'turbidity_901']",0.973869552660606
+29,wrapper,"['ammonium_901', 'ph_901', 'water_temperature_901']",0.983644529267796
+30,wrapper,"['ammonium_901', 'turbidity_901', 'water_temperature_901']",0.9835249953705314
+31,wrapper,"['conductivity_901', 'dissolved_oxygen_901', 'ph_901']",0.9955103447233026
+32,wrapper,"['conductivity_901', 'dissolved_oxygen_901', 'turbidity_901']",0.9955103447233026
+33,wrapper,"['conductivity_901', 'dissolved_oxygen_901', 'water_temperature_901']",0.9955103447233026
+34,wrapper,"['conductivity_901', 'ph_901', 'turbidity_901']",0.9955103355981311
+35,wrapper,"['conductivity_901', 'ph_901', 'water_temperature_901']",0.9955103447233026
+36,wrapper,"['conductivity_901', 'turbidity_901', 'water_temperature_901']",0.9955103355981311
+37,wrapper,"['dissolved_oxygen_901', 'ph_901', 'turbidity_901']",0.9797595038774718
+38,wrapper,"['dissolved_oxygen_901', 'ph_901', 'water_temperature_901']",0.9864679729173726
+39,wrapper,"['dissolved_oxygen_901', 'turbidity_901', 'water_temperature_901']",0.9869356845188467
+40,wrapper,"['ph_901', 'turbidity_901', 'water_temperature_901']",0.9865824694859869
+41,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901', 'ph_901']",0.9955103447233026
+42,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901', 'turbidity_901']",0.9955103447233026
+43,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901', 'water_temperature_901']",0.9955103447233026
+44,wrapper,"['ammonium_901', 'conductivity_901', 'ph_901', 'turbidity_901']",0.9955103355981311
+45,wrapper,"['ammonium_901', 'conductivity_901', 'ph_901', 'water_temperature_901']",0.9955103447233026
+46,wrapper,"['ammonium_901', 'conductivity_901', 'turbidity_901', 'water_temperature_901']",0.9955103355981311
+47,wrapper,"['ammonium_901', 'dissolved_oxygen_901', 'ph_901', 'turbidity_901']",0.9797596241425528
+48,wrapper,"['ammonium_901', 'dissolved_oxygen_901', 'ph_901', 'water_temperature_901']",0.9864679986550359
+49,wrapper,"['ammonium_901', 'dissolved_oxygen_901', 'turbidity_901', 'water_temperature_901']",0.9869366637199429
+50,wrapper,"['ammonium_901', 'ph_901', 'turbidity_901', 'water_temperature_901']",0.9865824524055378
+51,wrapper,"['conductivity_901', 'dissolved_oxygen_901', 'ph_901', 'turbidity_901']",0.9955103447233026
+52,wrapper,"['conductivity_901', 'dissolved_oxygen_901', 'ph_901', 'water_temperature_901']",0.9955103447233026
+53,wrapper,"['conductivity_901', 'dissolved_oxygen_901', 'turbidity_901', 'water_temperature_901']",0.9955103447233026
+54,wrapper,"['conductivity_901', 'ph_901', 'turbidity_901', 'water_temperature_901']",0.9955103355981311
+55,wrapper,"['dissolved_oxygen_901', 'ph_901', 'turbidity_901', 'water_temperature_901']",0.9886986711635586
+56,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901', 'ph_901', 'turbidity_901']",0.9955103447233026
+57,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901', 'ph_901', 'water_temperature_901']",0.9955103447233026
+58,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901', 'turbidity_901', 'water_temperature_901']",0.9955103447233026
+59,wrapper,"['ammonium_901', 'conductivity_901', 'ph_901', 'turbidity_901', 'water_temperature_901']",0.9955103355981311
+60,wrapper,"['ammonium_901', 'dissolved_oxygen_901', 'ph_901', 'turbidity_901', 'water_temperature_901']",0.9886986737373249
+61,wrapper,"['conductivity_901', 'dissolved_oxygen_901', 'ph_901', 'turbidity_901', 'water_temperature_901']",0.9955103447233026
+62,wrapper,"['ammonium_901', 'conductivity_901', 'dissolved_oxygen_901', 'ph_901', 'turbidity_901', 'water_temperature_901']",0.9955103447233026
