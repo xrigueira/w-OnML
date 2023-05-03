@@ -353,12 +353,10 @@ def multivar_plotter(station):
     
     # Normalize the data
     from sklearn.preprocessing import StandardScaler
+    from sklearn.preprocessing import MinMaxScaler
     
-    scaler = StandardScaler()
-    df.iloc[:, 9:-1] = scaler.fit_transform(df.iloc[:, 9:-1])
-
-    # Drop the not-needed columns: year, month, day, hour, minute, second, week, and weekOrder
-    df.drop(df.columns[1:9], axis=1, inplace=True)
+    scaler = MinMaxScaler()
+    df.iloc[:, 1:-1] = scaler.fit_transform(df.iloc[:, 1:-1])
     
     # Filter the data to select only rows where the label column has a value of 1
     df_index = df[df["label"] == 1]
@@ -403,11 +401,13 @@ if __name__ == '__main__':
     
     # label_analyzer(files=[901, 902, 904, 905, 906, 907, 910, 916])
     
-    file_paths = ['data/labeled_901.csv', 'data/labeled_902.csv',
-                'data/labeled_904.csv', 'data/labeled_905.csv',
-                'data/labeled_906.csv', 'data/labeled_907.csv',
-                'data/labeled_910.csv', 'data/labeled_916.csv']
+    multivar_plotter(station=901)
     
-    violins(variable_name='water_temperature', file_paths=file_paths)
+    # file_paths = ['data/labeled_901.csv', 'data/labeled_902.csv',
+    #             'data/labeled_904.csv', 'data/labeled_905.csv',
+    #             'data/labeled_906.csv', 'data/labeled_907.csv',
+    #             'data/labeled_910.csv', 'data/labeled_916.csv']
+    
+    # violins(variable_name='water_temperature', file_paths=file_paths)
 
 

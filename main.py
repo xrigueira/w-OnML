@@ -273,17 +273,18 @@ class Model():
         )
 
         # Documentation on ROC AUC: https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc
-        # metric = metrics.ROCAUC()
-        metric = metrics.Accuracy()
+        # The best metrics for our problem (imbalanced data) shoud be:
+        # Precission, recall, F1, and ROCAUC
+        metric = metrics.Precision()
 
         # for x, y in self.dataset:
         #     y_pred = model.predict_proba_one(x)
         #     model.learn_one(x, y)
         #     metric.update(y, y_pred)
-            # print(model.debug_one(x))
-        
+        #     # print(model.debug_one(x))
+            
         evaluate.progressive_val_score(self.dataset, model, metric)
-
+        
         print(metric)
 
     @tictoc
