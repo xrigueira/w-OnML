@@ -203,7 +203,7 @@ def gap_length(files):
         gaps.loc[len(gaps.index)] = [f, minimum, mean, std, maximum, Q1, Q2, Q3, p95]
     
     # Save the results
-    gaps.to_csv(f'data/gaps.csv', sep=',', encoding='utf-8', index=False)
+    gaps.to_csv('data/gaps.csv', sep=',', encoding='utf-8', index=False)
 
 @tictoc
 def gap_row_pyplot(file, max_missing_values):

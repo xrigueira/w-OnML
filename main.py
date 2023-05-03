@@ -260,6 +260,7 @@ class Model():
         
         from river import compose
         from river import metrics
+        from river import evaluate
         from river import linear_model
         from river import preprocessing
         
@@ -272,13 +273,16 @@ class Model():
         )
 
         # Documentation on ROC AUC: https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc
-        metric = metrics.ROCAUC()
+        # metric = metrics.ROCAUC()
+        metric = metrics.Accuracy()
 
-        for x, y in self.dataset:
-            y_pred = model.predict_proba_one(x)
-            model.learn_one(x, y)
-            metric.update(y, y_pred)
+        # for x, y in self.dataset:
+        #     y_pred = model.predict_proba_one(x)
+        #     model.learn_one(x, y)
+        #     metric.update(y, y_pred)
             # print(model.debug_one(x))
+        
+        evaluate.progressive_val_score(self.dataset, model, metric)
 
         print(metric)
 
@@ -586,7 +590,7 @@ if __name__ == '__main__':
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    imputator.imputation_del()
+    # imputator.imputation_del()
     
     # Call the model
     model = Model(station=station, columns=columns)
