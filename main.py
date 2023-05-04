@@ -275,7 +275,7 @@ class Model():
         # Documentation on ROC AUC: https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc
         # The best metrics for our problem (imbalanced data) shoud be:
         # Precission, recall, F1, and ROCAUC
-        metric = metrics.Precision()
+        metric = metrics.ROCAUC()
 
         # for x, y in self.dataset:
         #     y_pred = model.predict_proba_one(x)
@@ -591,7 +591,7 @@ if __name__ == '__main__':
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    # imputator.imputation_del()
+    imputator.imputation_del()
     
     # Call the model
     model = Model(station=station, columns=columns)

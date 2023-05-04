@@ -30,7 +30,7 @@ class labeled_901(base.FileDataset):
             converters={"ammonium_901": float,
                         "conductivity_901": float,
                         "dissolved_oxygen_901": float,
-                        "ph_901": float,
+                        "pH_901": float,
                         "turbidity_901": float,
                         "water_temperature_901": float,
                         "label": int,

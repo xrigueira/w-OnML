@@ -371,7 +371,7 @@ def multivar_plotter(station):
     grouped = df.groupby(date_group)
     consecutive_dates_indexes = [(group.index[0], group.index[-1]) for _, group in grouped]
     
-    # Set date a the index column
+    # Set date as the index column
     df.set_index('date', inplace=True)
     
     # Drop the label column
@@ -389,7 +389,7 @@ def multivar_plotter(station):
         
         # Save the image
         fig = fig.get_figure()
-        fig.savefig(f'images/anomaly_{station}_{counter}.png', dpi=300)
+        fig.savefig(f'images/anomaly_{station}_{counter}_long.png', dpi=300)
         
         # Close the fig for better memory management
         plt.close(fig=fig)

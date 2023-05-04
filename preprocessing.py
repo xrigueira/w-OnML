@@ -7,7 +7,7 @@ from joiner import joiner
 files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
 
 varNames = [i[0:-4] for i in files] # Extract the names of the variables, e.g.: pH_901.txt (4 intervals already appended following temporal sequence)
-stations = [902, 904, 905, 906, 907, 910, 916] # Define with stations to process
+stations = [901, 902, 904, 905, 906, 907, 910, 916] # Define with stations to process
 
 # Define the time frame we want to use (a: months, b: weeks, c: days)
 timeFrame = 'b'

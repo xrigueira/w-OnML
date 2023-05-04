@@ -23,7 +23,6 @@ class Imputator():
         Column names but the first and last one"""
         
         return list(self.dataset[self.iterator].columns)
-        # return list(self.dataset.columns[1:-1])
     
     @tictoc
     def imputation_del(self):
@@ -265,6 +264,7 @@ class Model():
         
         from river import compose
         from river import metrics
+        from river import evaluate
         from river import linear_model
         from river import preprocessing
         
@@ -278,16 +278,19 @@ class Model():
 
         # Documentation on ROC AUC: https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc
         metric = metrics.ROCAUC()
-
+        y_preds = []
         for x, y in self.dataset:
-            y_pred = model.predict_proba_one(x)
+            y_pred = model.predict_proba_one(x) # Put y_pred into a list and in another file add it to the db in another file
+            y_preds.append[y_pred]
             model.learn_one(x, y)
             metric.update(y, y_pred)
             # print(model.debug_one(x))
 
+        # evaluate.progressive_val_score(self.dataset, model, metric)
+        
         print(metric)
         
-        return metric.get()
+        return metric.get(), y_preds
 
     @tictoc
     def hoefftree(self):
@@ -543,20 +546,20 @@ class Model():
             compose.Select(*self.columns),
             imblearn.RandomSampler(
                 classifier=linear_model.LogisticRegression(),
-                desired_dist={0: .8, 1: .2},                    # Samples data to contain 80% of 0s and 20% of 1s
+                desired_dist={0: .7, 1: .3},                    # Samples data to contain 80% of 0s and 20% of 1s
                 sampling_rate=.01,                              # Trains with 1% of the data
                 seed=42
             )
         )
         
-        metric = metrics.ROCAUC()
+        metric = metrics.Accuracy()
 
         for x, y in self.dataset:
             y_pred = model.predict_proba_one(x)
             model.learn_one(x, y)
             metric.update(y, y_pred)
             # print(model.debug_one(x))
-
+        
         print(metric)
 
     @tictoc
@@ -601,9 +604,11 @@ if __name__ == '__main__':
     for i in range(1, len(names) + 1):
         for combo in itertools.combinations(names, i):
             combinations.append(list(combo))
-    
+    # combinations = [['turbidity_901']]
+    combinations = combinations[:1]
     # Get the data for each combination, save it and process it
     results = pd.DataFrame(columns=['method', 'combination', 'result'])
+    
     for i in combinations:
         
         print('Variables combined:', i)
@@ -615,8 +620,8 @@ if __name__ == '__main__':
         
         # Call the model
         model = Model(station=station, columns=columns)
-        metric = model.logreg()
-        
+        metric, y_preds = model.logreg()
+        print(y_preds)
         # Add the results of each iteration to the dataframe
         results.loc[len(results.index)] = [model.logreg.__name__, i, metric]
     
