@@ -260,7 +260,6 @@ class Model():
         
         from river import compose
         from river import metrics
-        from river import evaluate
         from river import linear_model
         from river import preprocessing
         
@@ -273,18 +272,14 @@ class Model():
         )
 
         # Documentation on ROC AUC: https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc
-        # The best metrics for our problem (imbalanced data) shoud be:
-        # Precission, recall, F1, and ROCAUC
         metric = metrics.ROCAUC()
 
-        # for x, y in self.dataset:
-        #     y_pred = model.predict_proba_one(x)
-        #     model.learn_one(x, y)
-        #     metric.update(y, y_pred)
-        #     # print(model.debug_one(x))
-            
-        evaluate.progressive_val_score(self.dataset, model, metric)
-        
+        for x, y in self.dataset:
+            y_pred = model.predict_proba_one(x)
+            model.learn_one(x, y)
+            metric.update(y, y_pred)
+            # print(model.debug_one(x))
+                    
         print(metric)
 
     @tictoc

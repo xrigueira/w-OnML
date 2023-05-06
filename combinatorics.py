@@ -1,5 +1,6 @@
 import data
 import itertools
+import numpy as np
 import pandas as pd
 from tictoc import tictoc
 
@@ -251,6 +252,20 @@ class Model():
         elif self.station == 916:
             self.dataset = data.labeled.labeled_916()
 
+    def get_labels(self):
+        """This function returns the column labels of
+        the database as it will be required by Metric()
+        ---------
+        Arguments:
+        self
+        
+        Return:
+        Column labels"""
+        
+        data = pd.read_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8')
+        
+        return list(data['label'])
+        
     @tictoc
     def logreg(self):
         """This method performs logist regression.
@@ -264,7 +279,6 @@ class Model():
         
         from river import compose
         from river import metrics
-        from river import evaluate
         from river import linear_model
         from river import preprocessing
         
@@ -277,20 +291,21 @@ class Model():
         )
 
         # Documentation on ROC AUC: https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc
-        metric = metrics.ROCAUC()
         y_preds = []
+        metric = metrics.ROCAUC()
+        
         for x, y in self.dataset:
             y_pred = model.predict_proba_one(x) # Put y_pred into a list and in another file add it to the db in another file
-            y_preds.append[y_pred]
+            y_preds.append(y_pred)
             model.learn_one(x, y)
             metric.update(y, y_pred)
             # print(model.debug_one(x))
-
-        # evaluate.progressive_val_score(self.dataset, model, metric)
         
         print(metric)
         
-        return metric.get(), y_preds
+        metric = metric.get() # In case we want to return it as a float
+        
+        return y_preds
 
     @tictoc
     def hoefftree(self):
@@ -589,6 +604,45 @@ class Model():
 
         print(len(drift))
 
+class Metric():
+    
+    def __init__(self, labels, predicted_labels, anomaly_tail) -> None:
+        self.labels = labels
+        self.predicted_labels = [0 if i[False] >= 0.5 else 1 for i in predicted_labels]
+        self.anomaly_tail = anomaly_tail
+    
+    # Get the start end end index of each anomaly in labels
+    def find_anomalies(self):
+        
+        anomalies = []
+        i = 0
+        while i < len(self.labels):
+            if self.labels[i] == 1:
+                j = i + 1
+                while j < len(self.labels) and self.labels[j] == 1:
+                    j += 1
+                if j < len(self.labels) and self.labels[j] == 0:
+                    anomalies.append((i, j))
+                i = j
+            else:
+                i += 1
+        
+        return anomalies
+    
+    # Get the match percentage between the anomalies and the next len(anomaly) items
+    def match_percentage(self):
+        
+        anomalies = self.find_anomalies()
+        total_matches = 0
+        total_items = 0
+        for start, end in anomalies:
+            anomaly_length = end - start
+            segment = self.predicted_labels[start:end+int(anomaly_length*self.anomaly_tail)]
+            total_matches += sum(a == b for a, b in zip(self.labels[start:end+int(anomaly_length*self.anomaly_tail)], segment))
+            total_items += (anomaly_length + int(anomaly_length*self.anomaly_tail))
+        
+        return total_matches / total_items if total_items > 0 else 1.0
+
 if __name__ == '__main__':
 
     station = 901
@@ -604,8 +658,7 @@ if __name__ == '__main__':
     for i in range(1, len(names) + 1):
         for combo in itertools.combinations(names, i):
             combinations.append(list(combo))
-    # combinations = [['turbidity_901']]
-    combinations = combinations[:1]
+    
     # Get the data for each combination, save it and process it
     results = pd.DataFrame(columns=['method', 'combination', 'result'])
     
@@ -620,10 +673,15 @@ if __name__ == '__main__':
         
         # Call the model
         model = Model(station=station, columns=columns)
-        metric, y_preds = model.logreg()
-        print(y_preds)
+        labels = model.get_labels()
+        y_preds = model.logreg()
+        
+        # Call the custom metric and get the result
+        metric = Metric(labels=labels, predicted_labels=y_preds, anomaly_tail=0.25)
+        result = metric.match_percentage()
+        
         # Add the results of each iteration to the dataframe
-        results.loc[len(results.index)] = [model.logreg.__name__, i, metric]
+        results.loc[len(results.index)] = [model.logreg.__name__, i, result]
     
     # Save the results
     results.to_csv(f'results.csv', sep=',', encoding='utf-8', index=True)
