@@ -1,6 +1,8 @@
 import time
+import functools
 
 def tictoc(func):
+    @functools.wraps(func)
     def wrapper(*args, **kargs):
         t1 = time.time()
         result = func(*args, **kargs)

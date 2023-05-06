@@ -72,7 +72,7 @@ class Imputator():
         df_not_missing = self.dataset[~self.dataset.isnull().any(axis=1)]
 
         # Drop the nonvariable columns
-        drop_columns = ['date', 'year', 'month', 'day', 'hour', 'minute', 'second', 'week', 'weekOrder', 'label']
+        drop_columns = ['date', 'label']
 
         df_missing = df_missing.drop(drop_columns, axis=1)
         df_not_missing = df_not_missing.drop(drop_columns, axis=1)
@@ -128,7 +128,7 @@ class Imputator():
         
         # Split the dataframe without missing values into features (X) and targets (y) variables.
         # In this case, the target variables in the columns with missing values
-        variables = list(self.dataset.columns[9:-1])
+        variables = list(self.dataset.columns[1:-1])
         X = df_not_missing.drop(variables, axis=1)
         y = df_not_missing[variables]
         
@@ -186,7 +186,7 @@ class Imputator():
         
         model = LinearRegression()
         
-        variables = list(self.dataset.columns[9:-1])
+        variables = list(self.dataset.columns[1:-1])
         X_train = df_not_missing.drop(variables, axis=1)
         y_train = df_not_missing[variables]
         
@@ -265,7 +265,7 @@ class Model():
         data = pd.read_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8')
         
         return list(data['label'])
-        
+
     @tictoc
     def logreg(self):
         """This method performs logist regression.
@@ -275,7 +275,7 @@ class Model():
         self.database = loaded data.
 
         Return:
-        metric.get() (float): the metric results."""
+        y_preds (list): contains the predictions."""
         
         from river import compose
         from river import metrics
@@ -295,11 +295,10 @@ class Model():
         metric = metrics.ROCAUC()
         
         for x, y in self.dataset:
-            y_pred = model.predict_proba_one(x) # Put y_pred into a list and in another file add it to the db in another file
+            y_pred = model.predict_proba_one(x)
             y_preds.append(y_pred)
             model.learn_one(x, y)
             metric.update(y, y_pred)
-            # print(model.debug_one(x))
         
         print(metric)
         
@@ -316,23 +315,29 @@ class Model():
         self.dataset (pd.dataframe): loaded dataset
         
         Return:
-        None"""
+        y_preds (list): contains the predictions"""
 
         from river import tree
         from river import compose
         from river import metrics
-        from river import evaluate
 
         model = compose.Pipeline(
             compose.Select(*self.columns),
             tree.HoeffdingTreeClassifier(grace_period=200)
         )
 
-        metric = metrics.Accuracy()
+        y_preds = []
+        metric = metrics.ROCAUC()
 
-        evaluate.progressive_val_score(self.dataset, model, metric)
+        for x, y in self.dataset:
+            y_pred = model.predict_proba_one(x)
+            y_preds.append(y_pred)
+            model.learn_one(x, y)
+            metric.update(y, y_pred)
 
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def halfspace(self):
@@ -345,7 +350,7 @@ class Model():
         self.dataset (pd.dataframe): loaded dataset
         
         Return:
-        None"""
+        y_preds (list): contains the predictions"""
 
         from river import anomaly
         from river import compose
@@ -358,14 +363,18 @@ class Model():
             anomaly.HalfSpaceTrees(seed=24)
         )
 
+        y_preds = []
         metric = metrics.ROCAUC()
 
         for x, y in self.dataset:
             score = model.score_one(x)
+            y_preds.append(score)
             model = model.learn_one(x)
             metric = metric.update(y, score)
 
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def oneclasssvm(self):
@@ -394,15 +403,19 @@ class Model():
             )
         )
 
+        y_preds = []
         metric = metrics.ROCAUC()
 
         for x, y in self.dataset:
             score = model.score_one(x)
+            y_preds.append(score)
             is_anomaly = model['QuantileFilter'].classify(score)
             model = model.learn_one(x)
             metric = metric.update(y, is_anomaly)
 
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def amfclassifier(self):
@@ -418,7 +431,6 @@ class Model():
         from river import forest
         from river import compose
         from river import metrics
-        from river import evaluate
         from river import preprocessing
 
         model = compose.Pipeline(
@@ -432,11 +444,18 @@ class Model():
             )
         )
 
-        metric = metrics.Accuracy()
-
-        evaluate.progressive_val_score(self.dataset, model, metric)
+        y_preds = []
+        metric = metrics.ROCAUC()
+        
+        for x, y in self.dataset:
+            y_pred = model.predict_proba_one(x)
+            y_preds.append(y_pred)
+            model.learn_one(x, y)
+            metric.update(y, y_pred)
 
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def arfclassifier(self):
@@ -453,7 +472,6 @@ class Model():
         from river import forest
         from river import compose
         from river import metrics
-        from river import evaluate
         from river import preprocessing
 
         model = compose.Pipeline(
@@ -462,11 +480,18 @@ class Model():
             forest.ARFClassifier(seed=1)
         )
 
-        metric = metrics.Accuracy()
-
-        evaluate.progressive_val_score(self.dataset, model, metric)
+        y_preds = []
+        metric = metrics.ROCAUC()
+        
+        for x, y in self.dataset:
+            y_pred = model.predict_proba_one(x)
+            y_preds.append(y_pred)
+            model.learn_one(x, y)
+            metric.update(y, y_pred)
 
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def fastdecisiontree(self):
@@ -483,7 +508,6 @@ class Model():
         from river import tree
         from river import compose
         from river import metrics
-        from river import evaluate
         from river import preprocessing
 
         model = compose.Pipeline(
@@ -494,11 +518,18 @@ class Model():
                 min_samples_reevaluate=1000)
         )
 
-        metric = metrics.Accuracy()
-
-        evaluate.progressive_val_score(self.dataset, model, metric)
+        y_preds = []
+        metric = metrics.ROCAUC()
+        
+        for x, y in self.dataset:
+            y_pred = model.predict_proba_one(x)
+            y_preds.append(y_pred)
+            model.learn_one(x, y)
+            metric.update(y, y_pred)
 
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def sgt(self):
@@ -514,7 +545,6 @@ class Model():
         from river import tree
         from river import compose
         from river import metrics
-        from river import evaluate
         from river import preprocessing
 
         model = compose.Pipeline(
@@ -527,11 +557,18 @@ class Model():
             )
         )
 
-        metric = metrics.Accuracy()
-
-        evaluate.progressive_val_score(self.dataset, model, metric)
+        y_preds = []
+        metric = metrics.ROCAUC()
+        
+        for x, y in self.dataset:
+            y_pred = model.predict_proba_one(x)
+            y_preds.append(y_pred)
+            model.learn_one(x, y)
+            metric.update(y, y_pred)
 
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def logreg_imb(self):
@@ -567,15 +604,18 @@ class Model():
             )
         )
         
-        metric = metrics.Accuracy()
+        y_preds = []
+        metric = metrics.ROCAUC()
 
         for x, y in self.dataset:
             y_pred = model.predict_proba_one(x)
+            y_preds.append(y_pred)
             model.learn_one(x, y)
             metric.update(y, y_pred)
-            # print(model.debug_one(x))
         
         print(metric)
+        
+        return y_preds
 
     @tictoc
     def adwin(self):
@@ -606,13 +646,26 @@ class Model():
 
 class Metric():
     
-    def __init__(self, labels, predicted_labels, anomaly_tail) -> None:
+    def __init__(self, labels, predicted_labels, model_used, anomaly_tail) -> None:
         self.labels = labels
-        self.predicted_labels = [0 if i[False] >= 0.5 else 1 for i in predicted_labels]
         self.anomaly_tail = anomaly_tail
+        self.model_used = model_used
+        if model_used == ('halfspace' or 'oneclasssvm'):
+            self.predicted_labels = [0 if i >= 0.5 else 1 for i in predicted_labels]
+        else:
+            self.predicted_labels = [0 if i[False] >= 0.5 else 1 for i in predicted_labels]
     
     # Get the start end end index of each anomaly in labels
     def find_anomalies(self):
+        """This function gets the start and end index of each
+        anomaly in labels
+        ----------
+        Arguments:
+        self
+        
+        Returns:
+        anomalies (list): list of tuples that contain the index of the beginning and end
+        of all anomalies"""
         
         anomalies = []
         i = 0
@@ -629,8 +682,14 @@ class Metric():
         
         return anomalies
     
-    # Get the match percentage between the anomalies and the next len(anomaly) items
     def match_percentage(self):
+        """This function gets the match  percentage between the anomalies and the next len(anomaly) items.
+        ----------
+        Arguments:
+        self
+        
+        Returns:
+        anomalies (float): matcch between labels and predicted labels"""
         
         anomalies = self.find_anomalies()
         total_matches = 0
