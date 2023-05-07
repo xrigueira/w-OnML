@@ -652,6 +652,8 @@ class Metric():
         self.model_used = model_used
         if model_used == ('halfspace' or 'oneclasssvm'):
             self.predicted_labels = [0 if i >= 0.5 else 1 for i in predicted_labels]
+        elif model_used == ('hoefftree' or 'amfclassifier' or 'arfclassifier' or 'fastdecisiontree' or 'sgt'):
+            self.predicted_labels = [0 if (len(i)==0) or (i[0] >= 0.5) else 1 for i in predicted_labels]
         else:
             self.predicted_labels = [0 if i[False] >= 0.5 else 1 for i in predicted_labels]
     
@@ -704,7 +706,7 @@ class Metric():
 
 if __name__ == '__main__':
 
-    station = 901
+    station = 904
 
     # Read the data
     df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8')
@@ -736,7 +738,7 @@ if __name__ == '__main__':
         y_preds = model.logreg()
         
         # Call the custom metric and get the result
-        metric = Metric(labels=labels, predicted_labels=y_preds, anomaly_tail=0.25)
+        metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.logreg.__name__, anomaly_tail=0.25)
         result = metric.match_percentage()
         
         # Add the results of each iteration to the dataframe

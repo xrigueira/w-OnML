@@ -1,4 +1,5 @@
 import data
+import numpy as np
 import pandas as pd
 from tictoc import tictoc
 
@@ -172,9 +173,9 @@ class Imputator():
         df_missing = self.dataset[self.dataset.isnull().any(axis=1)]
         df_not_missing = self.dataset[~self.dataset.isnull().any(axis=1)]
         
-        # Drop the 'date' column as it is not an integer float and the label
-        df_missing = df_missing.drop(['date', 'label'], axis=1)
-        df_not_missing = df_not_missing.drop(['date', 'label'], axis=1)
+        # Drop the 'date' column as it is not an integer or float
+        df_missing = df_missing.drop(['date'], axis=1)
+        df_not_missing = df_not_missing.drop(['date',], axis=1)
         
         # Train a linear regression model on the dataframe without missing values
         from sklearn.linear_model import LinearRegression
@@ -331,7 +332,7 @@ class Model():
             metric.update(y, y_pred)
 
         print(metric)
-        
+
         return y_preds
 
     @tictoc
@@ -403,13 +404,13 @@ class Model():
 
         for x, y in self.dataset:
             score = model.score_one(x)
-            y_preds.append(score)
             is_anomaly = model['QuantileFilter'].classify(score)
+            y_preds.append(is_anomaly)
             model = model.learn_one(x)
             metric = metric.update(y, is_anomaly)
 
         print(metric)
-        
+        np.save('y_preds.npy', y_preds)
         return y_preds
 
     @tictoc
@@ -449,7 +450,7 @@ class Model():
             metric.update(y, y_pred)
 
         print(metric)
-        
+        np.save('y_preds.npy', y_preds)
         return y_preds
 
     @tictoc
@@ -645,8 +646,12 @@ class Metric():
         self.labels = labels
         self.anomaly_tail = anomaly_tail
         self.model_used = model_used
-        if model_used == ('halfspace' or 'oneclasssvm'):
+        if model_used == 'halfspace':
             self.predicted_labels = [0 if i >= 0.5 else 1 for i in predicted_labels]
+        elif model_used == 'oneclasssvm':
+            self.predicted_labels = [int(i) for i in predicted_labels]
+        elif model_used == 'hoefftree' or 'amfclassifier' or 'arfclassifier' or 'fastdecisiontree' or 'sgt':
+            self.predicted_labels = [0 if (len(i)==0) or (i[0] >= 0.5) else 1 for i in predicted_labels]
         else:
             self.predicted_labels = [0 if i[False] >= 0.5 else 1 for i in predicted_labels]
     
@@ -704,7 +709,7 @@ if __name__ == '__main__':
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    imputator.imputation_del()
+    # imputator.imputation_trees()
     
     # Call the model
     model = Model(station=station, columns=columns)
