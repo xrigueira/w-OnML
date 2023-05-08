@@ -709,15 +709,15 @@ if __name__ == '__main__':
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    # imputator.imputation_trees()
+    imputator.imputation_del()
     
     # Call the model
     model = Model(station=station, columns=columns)
     labels = model.get_labels()
-    y_preds = model.arfclassifier()
+    y_preds = model.logreg()
     
     # Call the custom metric and get the result
-    metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.arfclassifier.__name__, anomaly_tail=0.25)
+    metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.logreg.__name__, anomaly_tail=0.25)
     result = metric.match_percentage()
     
     print('Metric result:', result)
