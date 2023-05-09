@@ -389,7 +389,8 @@ def multivar_plotter(station):
         
         # Save the image
         fig = fig.get_figure()
-        fig.savefig(f'images/anomaly_{station}_{counter}_long.png', dpi=300)
+        fig.subplots_adjust(bottom=0.19)
+        fig.savefig(f'images/anomaly_{station}_{counter}.png', dpi=300)
         
         # Close the fig for better memory management
         plt.close(fig=fig)
@@ -401,7 +402,7 @@ if __name__ == '__main__':
     
     # label_analyzer(files=[901, 902, 904, 905, 906, 907, 910, 916])
     
-    multivar_plotter(station=901)
+    multivar_plotter(station=902)
     
     # file_paths = ['data/labeled_901.csv', 'data/labeled_902.csv',
     #             'data/labeled_904.csv', 'data/labeled_905.csv',
