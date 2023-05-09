@@ -614,6 +614,49 @@ class Model():
         return y_preds
 
     @tictoc
+    def logreg_many(self):
+        """This method performs logistic regression, but with learn and 
+        predict many. Very bad resutls.
+        ----------
+        Arguments:
+        self.database = loaded data.
+
+        Return:
+        y_preds (list): contains the predictions."""
+        
+        from river import compose
+        from river import metrics
+        from river import linear_model
+        from river import preprocessing
+        from itertools import islice
+        
+        # Convert dictionary keys to a list of column names
+        model = compose.Pipeline(
+            compose.Select(*self.columns),
+            # Add the standard scaler and see if it works: preprocessing.StandardScaler(),
+            linear_model.LogisticRegression()
+        )
+
+        # Initialize a list to store the predicted probabilities
+        y_preds = []
+
+        # Train the model on the first 1000 samples of the dataset using learn_one()
+        for x, y in islice(self.dataset, 1000):
+            model.learn_one(x, y)
+
+        # Train the model on the rest of the dataset using learn_many()
+        X_train, y_train = zip(*[(x, y) for x, y in islice(self.dataset, 1000, None)])
+        X_train, y_train = pd.DataFrame(X_train), pd.Series(y_train)
+        model.learn_many(X_train, y_train)
+
+        # Make predictions on the entire dataset using predict_many()
+        X_test, y_test = zip(*[(x, y) for x, y in self.dataset])
+        X_test = pd.DataFrame(X_test)
+        y_preds = model.predict_many(X_test)
+        
+        return y_preds
+    
+    @tictoc
     def adwin(self):
         """This method implements drift detection with ADaptative WINdowing (ADWIN). 
         ----------
@@ -714,10 +757,14 @@ if __name__ == '__main__':
     # Call the model
     model = Model(station=station, columns=columns)
     labels = model.get_labels()
-    y_preds = model.logreg()
+    y_preds = model.logreg_many()
+    
+    data = pd.read_csv('data/labeled_901_cle.csv', sep=',', encoding='utf-8')
+    data['preds'] = list(y_preds)
+    data.to_csv('result_many.csv', sep=',', encoding='utf-8', index=False)
     
     # Call the custom metric and get the result
-    metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.logreg.__name__, anomaly_tail=0.25)
-    result = metric.match_percentage()
+    # metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.many.__name__, anomaly_tail=0.25)
+    # result = metric.match_percentage()
     
-    print('Metric result:', result)
+    # print('Metric result:', result)
