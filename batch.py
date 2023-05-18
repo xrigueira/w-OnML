@@ -33,14 +33,19 @@ class batch():
         return X_train, X_test, y_train, y_test
     
     def reader(self):
-        """This method...
+        """This method read the data and splits it in training and testing sets.
         ----------
         Arguments:
+        None.
         
-        Returns"""
+        Returns:
+        X_train: (np.array): variables train set.
+        X_test: (np.array): variables test set.
+        y_train: (np.array): target train set.
+        y_test: (np.array): target test set."""
         
         # Read the data
-        data = pd.read_csv(f'data/labeled_{self.station}_cle.csv', sep=',', encoding='utf-8')
+        data = pd.read_csv(f'data/labeled_{self.station}_cle copy.csv', sep=',', encoding='utf-8')
 
         # Convert variable columns to np.ndarray
         X = data.iloc[:, 1:-1].values
@@ -54,11 +59,16 @@ class batch():
         return X_train, y_train, X_test, y_test
     
     def logreg(self, X_train, y_train, X_test, y_test):
-        """This method...
+        """This method implements classification with Logistic Regression.
         ----------
         Arguments:
+        X_train: (np.array): variables train set.
+        X_test: (np.array): variables test set.
+        y_train: (np.array): target train set.
+        y_test: (np.array): target test set.
         
-        Returns"""
+        Returns:
+        None."""
         
         if self.search == True:
     
@@ -109,8 +119,108 @@ class batch():
             confusion_matrix = confusion_matrix(y_test, model.predict(X_test))
 
         print(confusion_matrix)
-        
 
+    def rf(self, X_train, y_train, X_test, y_test):
+        """This method implements classification with Random Forest.
+        ----------
+        Arguments:
+        X_train: (np.array): variables train set.
+        X_test: (np.array): variables test set.
+        y_train: (np.array): target train set.
+        y_test: (np.array): target test set.
+
+        Returns:
+        None."""
+
+        if self.search == True:
+    
+            # Define the parameters to iterate over
+            param_dist = {'n_estimators': [50, 75, 100, 125, 150, 175], 'max_depth': [1, 2, 3, 4, 5, 10, 15, 20, 50, None],
+                        'min_samples_split': [2, 4, 6, 8, 10], 'min_samples_leaf': [1, 2, 3, 4, 5]}
+            
+            from sklearn.model_selection import RandomizedSearchCV
+            from sklearn.ensemble import RandomForestClassifier
+            rand_search = RandomizedSearchCV(RandomForestClassifier(random_state=0), param_distributions = param_dist, n_iter=5, cv=5)
+            
+            rand_search.fit(X_train, y_train)
+            
+            # Get best params
+            best_params = rand_search.best_params_
+            best_model = rand_search.best_estimator_
+            print('Best params', best_params, '| Best model', best_model)
+            
+            # Make predictions on the testing data
+            y_hat = best_model.predict(X_test)
+            
+
+        elif self.search == False:
+            
+            # Call the model
+            from sklearn.ensemble import RandomForestClassifier
+            model = RandomForestClassifier(random_state=0)
+
+            # Fit the model to the training data
+            model.fit(X_train, y_train)
+
+            # Make predictions on the testing data
+            y_hat = model.predict(X_test)
+        
+        # Get the accuracy of the model
+        from sklearn.metrics import accuracy_score, confusion_matrix
+        accuracy = accuracy_score(y_test, y_hat)
+        print('Accuracy', accuracy)
+
+        # Get the number of rows labeled as anomalies in y_test
+        print('Number of anomalies', len([i for i in y_test if i==1]))
+
+        # Display the confusion matrix
+        if self.search == True:
+            confusion_matrix = confusion_matrix(y_test, best_model.predict(X_test))
+        elif self.search == False:
+            confusion_matrix = confusion_matrix(y_test, model.predict(X_test))
+
+        print(confusion_matrix)
+    
+    def svm(self, X_train, y_train, X_test, y_test):
+        """This method implements classification with SVM.
+        This method is quite slow on my machine. Too much data.
+        ----------
+        Arguments:
+        X_train: (np.array): variables train set.
+        X_test: (np.array): variables test set.
+        y_train: (np.array): target train set.
+        y_test: (np.array): target test set.
+
+        Returns:
+        None."""
+
+        if self.search == True:
+            print('Not developed yet.')
+            pass
+
+        elif self.search == False:
+            
+            # Call the model
+            from sklearn import svm
+            model = svm.SVC(kernel='rbf')
+
+            # Fit the model to the training data
+            model.fit(X_train, y_train)
+
+            # Make predictions on the testing data
+            y_hat = model.predict(X_test)
+
+        # Get the accuracy of the model
+        from sklearn.metrics import accuracy_score, confusion_matrix
+        accuracy = accuracy_score(y_test, y_hat)
+        print('Accuracy', accuracy)
+
+        # Get the number of rows labeled as anomalies in y_test
+        print('Number of anomalies', len([i for i in y_test if i==1]))
+
+        # Display the confusion matrix
+        confusion_matrix = confusion_matrix(y_test, model.predict(X_test))
+        print(confusion_matrix)
 
 if __name__ == '__main__':
     
@@ -121,4 +231,4 @@ if __name__ == '__main__':
     X_train, y_train, X_test, y_test = batch_model.reader()
     
     # Implement logistic regression
-    batch_model.logreg(X_train, y_train, X_test, y_test)
+    batch_model.rf(X_train, y_train, X_test, y_test)
