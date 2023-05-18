@@ -1,5 +1,5 @@
 # w-OnML
- Online learning for watar quality prediction and anomaly detection.
+ Online anomaly classification and prediction in water data.
 
 ## How to process the data?
 1. Get the concatenated files for each station desired from the (data repo)[https://github.com/xrigueira/data] and place them in the /data directory. For example: 'ammonium_901.txt', 'ph_901.txt', ... No other files should be in this directory when preprocessing.
