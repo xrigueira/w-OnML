@@ -747,7 +747,7 @@ class Metric():
 
 if __name__ == '__main__':
 
-    station = 901
+    station = 904
     
     # Impute the data
     imputator = Imputator(station=station)
@@ -757,11 +757,7 @@ if __name__ == '__main__':
     # Call the model
     model = Model(station=station, columns=columns)
     labels = model.get_labels()
-    y_preds = model.logreg()
-    
-    # data = pd.read_csv('data/labeled_901_cle.csv', sep=',', encoding='utf-8')
-    # data['preds'] = list(y_preds)
-    # data.to_csv('result_many.csv', sep=',', encoding='utf-8', index=False)
+    y_preds = model.logreg_imb()
     
     # Call the custom metric and get the result
     metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.logreg.__name__, anomaly_tail=0.25)
