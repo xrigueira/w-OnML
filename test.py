@@ -36,33 +36,34 @@ plt.style.use('ggplot')
 # fig.savefig(f'images/anomaly_{station}_50_trees.png', dpi=300)
 
 #%% Plot the labels of a specific anomaly
-station = 905
+station = 901
 
 # Read the database
 df = pd.read_csv(f'data/labeled_{station}.csv', sep=',', encoding='utf-8', parse_dates=['date'])
 
 # Load the labels and the predictions
 y = df['label'].to_list()
-y_logreg = np.load('y_logreg.npy', allow_pickle=True)
-y_amf = np.load('y_amf.npy', allow_pickle=True)
-y_arf = np.load('y_arf.npy', allow_pickle=True)
+y_logreg = np.load(f'y_logreg_{station}.npy', allow_pickle=True)
+y_amf = np.load(f'y_amf_{station}.npy', allow_pickle=True)
+y_arf = np.load(f'y_arf_{station}.npy', allow_pickle=True)
 
 # Reformat the data
 y_logreg = [0 if i[False] >= 0.5 else 1 for i in y_logreg]
 y_amf = [0 if (len(i)==0) or (i[0] >= 0.5) else 1 for i in y_amf]
 y_arf = [0 if (len(i)==0) or (i[0] >= 0.5) else 1 for i in y_arf]
 
-# Anomaly 43 = 446208:446305
-# Anomaly 50 = 451872:452041
+# Anomaly 30 station 901 = 245912:245969
+# Anomaly 43 station 905 = 446208:446305
+# Anomaly 50 station 905 = 451872:452041
 stretch = 36
-start_index = 446208 - stretch
-end_index = 446305 + stretch
+start_index = 245912 - stretch
+end_index = 245969 + stretch
 fig, ax = plt.subplots(figsize=(10, 5))
 ax.plot(y[start_index:end_index], label='label')
 ax.plot(y_logreg[start_index:end_index], label='Log. Reg.')
 ax.plot(y_amf[start_index:end_index], label='AMF')
 ax.plot(y_arf[start_index:end_index], label='ARF')
-ax.set_title('Anomaly 43 station 905')
+ax.set_title('Anomaly 30 station 901')
 ax.set_xlabel('Time')
 ax.set_ylabel('Label')
 plt.legend()

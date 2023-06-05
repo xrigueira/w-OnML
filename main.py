@@ -747,7 +747,7 @@ class Metric():
 
 if __name__ == '__main__':
 
-    station = 905
+    station = 901
     
     # Impute the data
     imputator = Imputator(station=station)
@@ -758,7 +758,7 @@ if __name__ == '__main__':
     model = Model(station=station, columns=columns)
     labels = model.get_labels()
     y_preds = model.arfclassifier()
-    np.save('y_arf.npy', y_preds)
+    np.save('y_arf_901.npy', y_preds)
     
     # Call the custom metric and get the result
     metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.logreg.__name__, anomaly_tail=0.25)
