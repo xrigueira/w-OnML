@@ -402,7 +402,7 @@ if __name__ == '__main__':
     
     # label_analyzer(files=[901, 902, 904, 905, 906, 907, 910, 916])
     
-    multivar_plotter(station=902)
+    multivar_plotter(station=904)
     
     # file_paths = ['data/labeled_901.csv', 'data/labeled_902.csv',
     #             'data/labeled_904.csv', 'data/labeled_905.csv',

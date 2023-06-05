@@ -726,7 +726,7 @@ class Metric():
         return anomalies
     
     def match_percentage(self):
-        """This function gets the match  percentage between the anomalies and the next len(anomaly) items.
+        """This function gets the match percentage between the anomalies and the next len(anomaly) items.
         ----------
         Arguments:
         self
@@ -747,17 +747,18 @@ class Metric():
 
 if __name__ == '__main__':
 
-    station = 904
+    station = 905
     
     # Impute the data
     imputator = Imputator(station=station)
     columns = imputator.selector()
-    imputator.imputation_del()
+    # imputator.imputation_linreg()
     
-    # Call the model
+    # # Call the model
     model = Model(station=station, columns=columns)
     labels = model.get_labels()
-    y_preds = model.logreg_imb()
+    y_preds = model.arfclassifier()
+    np.save('y_arf.npy', y_preds)
     
     # Call the custom metric and get the result
     metric = Metric(labels=labels, predicted_labels=y_preds, model_used=model.logreg.__name__, anomaly_tail=0.25)
